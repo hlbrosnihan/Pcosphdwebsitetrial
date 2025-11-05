@@ -1,0 +1,94 @@
+{
+  "drawflow": {
+    "Home": {
+      "data": {
+        "1": {
+          "id": 1,
+          "name": "GP Visit",
+          "data": {
+            "label": "GP Visit"
+          },
+          "class": "GP Visit",
+          "html": "<div><strong>GP Visit</strong></div>",
+          "typenode": false,
+          "inputs": {
+            "input_1": {
+              "connections": []
+            }
+          },
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "3",
+                  "output": "input_1"
+                }
+              ]
+            }
+          },
+          "pos_x": 135,
+          "pos_y": 265
+        },
+        "2": {
+          "id": 2,
+          "name": "Diagnosis",
+          "data": {
+            "label": "Diagnosis"
+          },
+          "class": "Diagnosis",
+          "html": "<div><strong>Diagnosis</strong></div>",
+          "typenode": false,
+          "inputs": {
+            "input_1": {
+              "connections": [
+                {
+                  "node": "3",
+                  "input": "output_1"
+                }
+              ]
+            }
+          },
+          "outputs": {
+            "output_1": {
+              "connections": []
+            }
+          },
+          "pos_x": 901,
+          "pos_y": 133
+        },
+        "3": {
+          "id": 3,
+          "name": "Blood Test",
+          "data": {
+            "label": "Blood Test"
+          },
+          "class": "Blood Test",
+          "html": "<div><strong>Blood Test</strong></div>",
+          "typenode": false,
+          "inputs": {
+            "input_1": {
+              "connections": [
+                {
+                  "node": "1",
+                  "input": "output_1"
+                }
+              ]
+            }
+          },
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "2",
+                  "output": "input_1"
+                }
+              ]
+            }
+          },
+          "pos_x": 610,
+          "pos_y": 261
+        }
+      }
+    }
+  }
+}
