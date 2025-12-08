@@ -151,7 +151,7 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
           <h2 className="mb-6">What to Expect</h2>
           <div className="space-y-6">
             <div className="border-l-4 border-teal-600 pl-6">
-              <h3 className="mb-2">Initial Screening</h3>
+              <h3 className="mb-2">Initial Survey</h3>
               <p className="text-gray-600">
                 A preliminary assessment to confirm eligibility and explain the study procedures in detail.
                 You'll have the opportunity to ask questions and review the consent form.
@@ -159,7 +159,7 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
             </div>
 
             <div className="border-l-4 border-teal-600 pl-6">
-              <h3 className="mb-2">Baseline Assessment</h3>
+              <h3 className="mb-2">Focus Groups & Interviews</h3>
               <p className="text-gray-600">
                 Comprehensive health evaluation including medical history, physical examination, blood tests,
                 and metabolic assessments to establish your baseline health status.
@@ -167,15 +167,7 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
             </div>
 
             <div className="border-l-4 border-teal-600 pl-6">
-              <h3 className="mb-2">Follow-up Visits</h3>
-              <p className="text-gray-600">
-                Regular appointments to monitor your health, collect samples, and track changes over time.
-                Each visit typically takes 1-2 hours.
-              </p>
-            </div>
-
-            <div className="border-l-4 border-teal-600 pl-6">
-              <h3 className="mb-2">Study Completion</h3>
+              <h3 className="mb-2">Co-design Workshop</h3>
               <p className="text-gray-600">
                 Final assessment and debriefing session. You'll receive a summary of your results and
                 information about how the data will contribute to research.
@@ -229,40 +221,6 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
                   required
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
                   placeholder="your.email@example.com"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="phone" className="block mb-2 text-gray-700">
-                  Phone Number *
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
-                  placeholder="(123) 456-7890"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="age" className="block mb-2 text-gray-700">
-                  Age *
-                </label>
-                <input
-                  type="number"
-                  id="age"
-                  name="age"
-                  value={formData.age}
-                  onChange={handleChange}
-                  required
-                  min="18"
-                  max="45"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
-                  placeholder="Enter your age"
                 />
               </div>
             </div>

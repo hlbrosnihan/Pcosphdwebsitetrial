@@ -30,11 +30,15 @@ export function SurveyPage() {
     periodTrackerOther: '',
     periodTrackerLikes: '',
     periodTrackerDislikes: '',
+    periodTrackerRankings: {} as Record<string, string>,
+    periodTrackerEffectiveness: {} as Record<string, string>,
     usesNutritionApp: '',
     nutritionApps: [] as string[],
     nutritionAppOther: '',
     nutritionAppLikes: '',
     nutritionAppDislikes: '',
+    nutritionAppRankings: {} as Record<string, string>,
+    nutritionAppEffectiveness: {} as Record<string, string>,
     usesPCOSApp: '',
     pcosAppName: '',
     pcosAppLikes: '',
@@ -45,11 +49,18 @@ export function SurveyPage() {
     currentMedications: '',
     otherConditions: '',
     familyHistory: '',
+    hasBeenPregnant: '',
+    usedIVF: '',
+    timeToPregnancy: '',
     
     // Lifestyle
     exerciseFrequency: '',
     dietType: '',
     sleepHours: '',
+    socialMediaTime: '',
+    socialMediaNetworks: [] as string[],
+    socialMediaOther: '',
+    socialMediaRankings: {} as Record<string, string>,
     stressLevel: '',
     
     // Quality of Life
@@ -78,7 +89,7 @@ export function SurveyPage() {
     });
   };
 
-  const handleCheckboxChange = (field: 'symptoms' | 'previousTreatments' | 'nhsAppFeatures' | 'periodTrackerApps' | 'nutritionApps', value: string) => {
+  const handleCheckboxChange = (field: 'symptoms' | 'previousTreatments' | 'nhsAppFeatures' | 'periodTrackerApps' | 'nutritionApps' | 'socialMediaNetworks', value: string) => {
     const currentValues = formData[field];
     const newValues = currentValues.includes(value)
       ? currentValues.filter(v => v !== value)
@@ -87,6 +98,36 @@ export function SurveyPage() {
     setFormData({
       ...formData,
       [field]: newValues
+    });
+  };
+
+  const handleRankingChange = (network: string, rank: string) => {
+    setFormData({
+      ...formData,
+      socialMediaRankings: {
+        ...formData.socialMediaRankings,
+        [network]: rank
+      }
+    });
+  };
+
+  const handleAppRankingChange = (app: string, rank: string, field: 'periodTrackerRankings' | 'nutritionAppRankings') => {
+    setFormData({
+      ...formData,
+      [field]: {
+        ...formData[field],
+        [app]: rank
+      }
+    });
+  };
+
+  const handleAppEffectivenessChange = (app: string, rating: string, field: 'periodTrackerEffectiveness' | 'nutritionAppEffectiveness') => {
+    setFormData({
+      ...formData,
+      [field]: {
+        ...formData[field],
+        [app]: rating
+      }
     });
   };
 
@@ -128,7 +169,7 @@ export function SurveyPage() {
                   <h1 className="text-white">PCOS Research Survey</h1>
                 </div>
                 <p className="text-teal-50">
-                  Help us better understand PCOS by sharing your experiences. This survey takes approximately 15-20 minutes to complete.
+                  Help us better understand your PCOS journey by sharing your experiences. This survey takes approximately 15-20 minutes to complete.
                 </p>
               </div>
             </div>
@@ -143,8 +184,8 @@ export function SurveyPage() {
               <h3 className="text-blue-900 mb-2">Before You Begin</h3>
               <ul className="space-y-1 text-blue-800">
                 <li>• All responses are confidential and will be used for research purposes only</li>
-                <li>• You can save your progress and return later</li>
-                <li>• There are no right or wrong answers - we want to hear about your experiences</li>
+    
+                <li>• There are no right or wrong answers - we want to hear about your experiences and digital interactions</li>
                 <li>• You may skip any questions you're not comfortable answering</li>
               </ul>
             </div>
@@ -587,6 +628,98 @@ export function SurveyPage() {
                             {formData.periodTrackerDislikes.length}/500 characters
                           </p>
                         </div>
+
+                        {/* Period Tracker App Rankings */}
+                        {formData.periodTrackerApps.length > 1 && (
+                          <div className="bg-teal-50 border border-teal-200 rounded-lg p-6">
+                            <label className="block mb-3 text-gray-700">
+                              Please rank the period tracker apps you selected in order of usage (1 = most used)
+                            </label>
+                            <div className="space-y-3">
+                              {formData.periodTrackerApps.map((app) => {
+                                const displayName = app === 'Other' && formData.periodTrackerOther 
+                                  ? formData.periodTrackerOther 
+                                  : app;
+                                const usedRanks = Object.entries(formData.periodTrackerRankings)
+                                  .filter(([appName, _]) => appName !== app)
+                                  .map(([_, rank]) => rank);
+                                return (
+                                  <div key={app} className="flex items-center gap-4 bg-white p-3 rounded-lg">
+                                    <span className="text-gray-700 flex-1">{displayName}</span>
+                                    <select
+                                      value={formData.periodTrackerRankings[app] || ''}
+                                      onChange={(e) => handleAppRankingChange(app, e.target.value, 'periodTrackerRankings')}
+                                      className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
+                                    >
+                                      <option value="">Select rank...</option>
+                                      {Array.from({ length: formData.periodTrackerApps.length }, (_, i) => i + 1).map((rank) => {
+                                        const rankStr = rank.toString();
+                                        const isUsed = usedRanks.includes(rankStr);
+                                        return (
+                                          <option key={rank} value={rankStr} disabled={isUsed}>
+                                            {rank}{isUsed ? ' (already used)' : ''}
+                                          </option>
+                                        );
+                                      })}
+                                    </select>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Period Tracker App Effectiveness */}
+                        {formData.periodTrackerApps.length > 0 && (
+                          <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
+                            <label className="block mb-4 text-gray-700">
+                              How well does each app work for you?
+                            </label>
+                            <div className="space-y-4">
+                              {formData.periodTrackerApps.map((app) => {
+                                const displayName = app === 'Other' && formData.periodTrackerOther 
+                                  ? formData.periodTrackerOther 
+                                  : app;
+                                return (
+                                  <div key={app} className="bg-white p-4 rounded-lg">
+                                    <div className="mb-3">
+                                      <span className="text-gray-700">{displayName}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center gap-2">
+                                      {[
+                                        { value: 'works-very-well', icon: SmileIcon, label: 'Works Very Well', color: 'text-green-600' },
+                                        { value: 'works-well', icon: Smile, label: 'Works Well', color: 'text-green-500' },
+                                        { value: 'neutral', icon: Meh, label: 'Neutral', color: 'text-gray-500' },
+                                        { value: 'doesnt-work-well', icon: Frown, label: "Doesn't Work Well", color: 'text-orange-500' },
+                                        { value: 'doesnt-work', icon: FrownIcon, label: "Doesn't Work", color: 'text-red-600' }
+                                      ].map((option) => {
+                                        const Icon = option.icon;
+                                        const isSelected = formData.periodTrackerEffectiveness[app] === option.value;
+                                        return (
+                                          <button
+                                            key={option.value}
+                                            type="button"
+                                            onClick={() => handleAppEffectivenessChange(app, option.value, 'periodTrackerEffectiveness')}
+                                            className={`flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                                              isSelected 
+                                                ? 'border-teal-600 bg-teal-50' 
+                                                : 'border-gray-200 hover:border-gray-300 bg-white'
+                                            }`}
+                                          >
+                                            <Icon size={28} className={isSelected ? 'text-teal-600' : option.color} />
+                                            <span className={`text-xs text-center ${isSelected ? 'text-teal-700' : 'text-gray-600'}`}>
+                                              {option.label}
+                                            </span>
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
                       </>
                     )}
                   </div>
@@ -691,6 +824,98 @@ export function SurveyPage() {
                             {formData.nutritionAppDislikes.length}/500 characters
                           </p>
                         </div>
+
+                        {/* Nutrition App Rankings */}
+                        {formData.nutritionApps.length > 1 && (
+                          <div className="bg-teal-50 border border-teal-200 rounded-lg p-6">
+                            <label className="block mb-3 text-gray-700">
+                              Please rank the nutrition/weight management apps you selected in order of usage (1 = most used)
+                            </label>
+                            <div className="space-y-3">
+                              {formData.nutritionApps.map((app) => {
+                                const displayName = app === 'Other' && formData.nutritionAppOther 
+                                  ? formData.nutritionAppOther 
+                                  : app;
+                                const usedRanks = Object.entries(formData.nutritionAppRankings)
+                                  .filter(([appName, _]) => appName !== app)
+                                  .map(([_, rank]) => rank);
+                                return (
+                                  <div key={app} className="flex items-center gap-4 bg-white p-3 rounded-lg">
+                                    <span className="text-gray-700 flex-1">{displayName}</span>
+                                    <select
+                                      value={formData.nutritionAppRankings[app] || ''}
+                                      onChange={(e) => handleAppRankingChange(app, e.target.value, 'nutritionAppRankings')}
+                                      className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
+                                    >
+                                      <option value="">Select rank...</option>
+                                      {Array.from({ length: formData.nutritionApps.length }, (_, i) => i + 1).map((rank) => {
+                                        const rankStr = rank.toString();
+                                        const isUsed = usedRanks.includes(rankStr);
+                                        return (
+                                          <option key={rank} value={rankStr} disabled={isUsed}>
+                                            {rank}{isUsed ? ' (already used)' : ''}
+                                          </option>
+                                        );
+                                      })}
+                                    </select>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Nutrition App Effectiveness */}
+                        {formData.nutritionApps.length > 0 && (
+                          <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
+                            <label className="block mb-4 text-gray-700">
+                              How well does each app work for you?
+                            </label>
+                            <div className="space-y-4">
+                              {formData.nutritionApps.map((app) => {
+                                const displayName = app === 'Other' && formData.nutritionAppOther 
+                                  ? formData.nutritionAppOther 
+                                  : app;
+                                return (
+                                  <div key={app} className="bg-white p-4 rounded-lg">
+                                    <div className="mb-3">
+                                      <span className="text-gray-700">{displayName}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center gap-2">
+                                      {[
+                                        { value: 'works-very-well', icon: SmileIcon, label: 'Works Very Well', color: 'text-green-600' },
+                                        { value: 'works-well', icon: Smile, label: 'Works Well', color: 'text-green-500' },
+                                        { value: 'neutral', icon: Meh, label: 'Neutral', color: 'text-gray-500' },
+                                        { value: 'doesnt-work-well', icon: Frown, label: "Doesn't Work Well", color: 'text-orange-500' },
+                                        { value: 'doesnt-work', icon: FrownIcon, label: "Doesn't Work", color: 'text-red-600' }
+                                      ].map((option) => {
+                                        const Icon = option.icon;
+                                        const isSelected = formData.nutritionAppEffectiveness[app] === option.value;
+                                        return (
+                                          <button
+                                            key={option.value}
+                                            type="button"
+                                            onClick={() => handleAppEffectivenessChange(app, option.value, 'nutritionAppEffectiveness')}
+                                            className={`flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                                              isSelected 
+                                                ? 'border-teal-600 bg-teal-50' 
+                                                : 'border-gray-200 hover:border-gray-300 bg-white'
+                                            }`}
+                                          >
+                                            <Icon size={28} className={isSelected ? 'text-teal-600' : option.color} />
+                                            <span className={`text-xs text-center ${isSelected ? 'text-teal-700' : 'text-gray-600'}`}>
+                                              {option.label}
+                                            </span>
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
                       </>
                     )}
                   </div>
@@ -810,21 +1035,6 @@ export function SurveyPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="currentMedications" className="block mb-2 text-gray-700">
-                    Current Medications (Please list)
-                  </label>
-                  <textarea
-                    id="currentMedications"
-                    name="currentMedications"
-                    value={formData.currentMedications}
-                    onChange={handleChange}
-                    rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 resize-none"
-                    placeholder="List any medications you are currently taking..."
-                  />
-                </div>
-
-                <div>
                   <label htmlFor="otherConditions" className="block mb-2 text-gray-700">
                     Other Health Conditions
                   </label>
@@ -853,6 +1063,63 @@ export function SurveyPage() {
                     placeholder="Describe any family history..."
                   />
                 </div>
+
+                <div>
+                  <label htmlFor="hasBeenPregnant" className="block mb-2 text-gray-700">
+                    Have you ever been pregnant?
+                  </label>
+                  <select
+                    id="hasBeenPregnant"
+                    name="hasBeenPregnant"
+                    value={formData.hasBeenPregnant}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
+                  >
+                    <option value="">Select...</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </div>
+
+                {formData.hasBeenPregnant === 'yes' && (
+                  <div className="space-y-6">
+                    <div>
+                      <label htmlFor="usedIVF" className="block mb-2 text-gray-700">
+                        Did you use IVF (In Vitro Fertilization)?
+                      </label>
+                      <select
+                        id="usedIVF"
+                        name="usedIVF"
+                        value={formData.usedIVF}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
+                      >
+                        <option value="">Select...</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="timeToPregnancy" className="block mb-2 text-gray-700">
+                        How long did it take to get pregnant?
+                      </label>
+                      <select
+                        id="timeToPregnancy"
+                        name="timeToPregnancy"
+                        value={formData.timeToPregnancy}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
+                      >
+                        <option value="">Select...</option>
+                        <option value="less-than-6">Less than 6 months</option>
+                        <option value="6-12">6-12 months</option>
+                        <option value="1-2-years">1-2 years</option>
+                        <option value="more-than-2">More than 2 years</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -860,86 +1127,232 @@ export function SurveyPage() {
             {currentSection === 4 && (
               <div className="space-y-6">
                 <div>
-                  <label htmlFor="exerciseFrequency" className="block mb-2 text-gray-700">
+                  <label className="block mb-3 text-gray-700">
                     How often do you exercise?
                   </label>
-                  <select
-                    id="exerciseFrequency"
-                    name="exerciseFrequency"
-                    value={formData.exerciseFrequency}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
-                  >
-                    <option value="">Select...</option>
-                    <option value="daily">Daily</option>
-                    <option value="4-6-times">4-6 times per week</option>
-                    <option value="2-3-times">2-3 times per week</option>
-                    <option value="once">Once per week</option>
-                    <option value="rarely">Rarely</option>
-                    <option value="never">Never</option>
-                  </select>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {[
+                      { value: 'never', label: 'Never' },
+                      { value: 'rarely', label: 'Rarely' },
+                      { value: 'once', label: '1x/week' },
+                      { value: '2-3-times', label: '2-3x/week' },
+                      { value: '4-6-times', label: '4-6x/week' },
+                      { value: 'daily', label: 'Daily' }
+                    ].map((option) => (
+                      <label key={option.value}>
+                        <input
+                          type="radio"
+                          name="exerciseFrequency"
+                          value={option.value}
+                          checked={formData.exerciseFrequency === option.value}
+                          onChange={handleChange}
+                          className="peer sr-only"
+                        />
+                        <div className="p-3 w-[140px] text-center border border-gray-300 rounded-lg cursor-pointer transition-all peer-checked:bg-teal-600 peer-checked:text-white peer-checked:border-teal-600 hover:border-teal-400">
+                          <span>{option.label}</span>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
-                  <label htmlFor="dietType" className="block mb-2 text-gray-700">
+                  <label className="block mb-3 text-gray-700">
                     How would you describe your diet?
                   </label>
-                  <select
-                    id="dietType"
-                    name="dietType"
-                    value={formData.dietType}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
-                  >
-                    <option value="">Select...</option>
-                    <option value="balanced">Balanced/Regular</option>
-                    <option value="low-carb">Low-carb</option>
-                    <option value="keto">Ketogenic</option>
-                    <option value="mediterranean">Mediterranean</option>
-                    <option value="vegetarian">Vegetarian</option>
-                    <option value="vegan">Vegan</option>
-                    <option value="gluten-free">Gluten-free</option>
-                    <option value="no-specific">No specific diet</option>
-                  </select>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {[
+                      { value: 'balanced', label: 'Balanced' },
+                      { value: 'low-carb', label: 'Low-carb' },
+                      { value: 'keto', label: 'Keto' },
+                      { value: 'mediterranean', label: 'Mediterranean' },
+                      { value: 'vegetarian', label: 'Vegetarian' },
+                      { value: 'vegan', label: 'Vegan' },
+                      { value: 'gluten-free', label: 'Gluten-free' },
+                      { value: 'no-specific', label: 'No specific diet' }
+                    ].map((option) => (
+                      <label key={option.value}>
+                        <input
+                          type="radio"
+                          name="dietType"
+                          value={option.value}
+                          checked={formData.dietType === option.value}
+                          onChange={handleChange}
+                          className="peer sr-only"
+                        />
+                        <div className="p-3 w-[140px] text-center border border-gray-300 rounded-lg cursor-pointer transition-all peer-checked:bg-teal-600 peer-checked:text-white peer-checked:border-teal-600 hover:border-teal-400">
+                          <span>{option.label}</span>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
-                  <label htmlFor="sleepHours" className="block mb-2 text-gray-700">
+                  <label className="block mb-3 text-gray-700">
                     Average hours of sleep per night
                   </label>
-                  <select
-                    id="sleepHours"
-                    name="sleepHours"
-                    value={formData.sleepHours}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
-                  >
-                    <option value="">Select...</option>
-                    <option value="less-than-5">Less than 5 hours</option>
-                    <option value="5-6">5-6 hours</option>
-                    <option value="7-8">7-8 hours</option>
-                    <option value="more-than-8">More than 8 hours</option>
-                  </select>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {[
+                      { value: 'less-than-5', label: 'Less than 5 hours' },
+                      { value: '5-6', label: '5-6 hours' },
+                      { value: '7-8', label: '7-8 hours' },
+                      { value: 'more-than-8', label: 'More than 8 hours' }
+                    ].map((option) => (
+                      <label key={option.value}>
+                        <input
+                          type="radio"
+                          name="sleepHours"
+                          value={option.value}
+                          checked={formData.sleepHours === option.value}
+                          onChange={handleChange}
+                          className="peer sr-only"
+                        />
+                        <div className="p-3 w-[180px] text-center border border-gray-300 rounded-lg cursor-pointer transition-all peer-checked:bg-teal-600 peer-checked:text-white peer-checked:border-teal-600 hover:border-teal-400">
+                          <span>{option.label}</span>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
-                  <label htmlFor="stressLevel" className="block mb-2 text-gray-700">
+                  <label className="block mb-3 text-gray-700">
+                    How much time do you spend on social media?
+                  </label>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {[
+                      { value: 'less-than-1', label: 'Less than 1 hour' },
+                      { value: '1-2', label: '1-2 hours' },
+                      { value: '3-4', label: '3-4 hours' },
+                      { value: 'more-than-4', label: 'More than 4 hours' }
+                    ].map((option) => (
+                      <label key={option.value}>
+                        <input
+                          type="radio"
+                          name="socialMediaTime"
+                          value={option.value}
+                          checked={formData.socialMediaTime === option.value}
+                          onChange={handleChange}
+                          className="peer sr-only"
+                        />
+                        <div className="p-3 w-[180px] text-center border border-gray-300 rounded-lg cursor-pointer transition-all peer-checked:bg-teal-600 peer-checked:text-white peer-checked:border-teal-600 hover:border-teal-400">
+                          <span>{option.label}</span>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block mb-3 text-gray-700">
+                    What social media networks do you use? (Select all that apply)
+                  </label>
+                  <div className="space-y-2">
+                    {[
+                      'Facebook',
+                      'Instagram',
+                      'Twitter/X',
+                      'TikTok',
+                      'LinkedIn',
+                      'YouTube',
+                      'Snapchat',
+                      'Pinterest',
+                      'Reddit',
+                      'WhatsApp',
+                      'Other'
+                    ].map((network) => (
+                      <label key={network} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.socialMediaNetworks.includes(network)}
+                          onChange={() => handleCheckboxChange('socialMediaNetworks', network)}
+                          className="w-4 h-4 text-teal-600 rounded focus:ring-teal-600"
+                        />
+                        <span className="text-gray-700">{network}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {formData.socialMediaNetworks.includes('Other') && (
+                    <div className="mt-3">
+                      <input
+                        type="text"
+                        name="socialMediaOther"
+                        value={formData.socialMediaOther}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
+                        placeholder="Please specify other social media network"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {formData.socialMediaNetworks.length > 0 && (
+                  <div className="bg-teal-50 border border-teal-200 rounded-lg p-6">
+                    <label className="block mb-3 text-gray-700">
+                      Please rank the social media networks you selected in order of usage (1 = most used)
+                    </label>
+                    <div className="space-y-3">
+                      {formData.socialMediaNetworks.map((network) => {
+                        const displayName = network === 'Other' && formData.socialMediaOther 
+                          ? formData.socialMediaOther 
+                          : network;
+                        const usedRanks = Object.entries(formData.socialMediaRankings)
+                          .filter(([net, _]) => net !== network)
+                          .map(([_, rank]) => rank);
+                        return (
+                          <div key={network} className="flex items-center gap-4 bg-white p-3 rounded-lg">
+                            <span className="text-gray-700 flex-1">{displayName}</span>
+                            <select
+                              value={formData.socialMediaRankings[network] || ''}
+                              onChange={(e) => handleRankingChange(network, e.target.value)}
+                              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
+                            >
+                              <option value="">Select rank...</option>
+                              {Array.from({ length: formData.socialMediaNetworks.length }, (_, i) => i + 1).map((rank) => {
+                                const rankStr = rank.toString();
+                                const isUsed = usedRanks.includes(rankStr);
+                                return (
+                                  <option key={rank} value={rankStr} disabled={isUsed}>
+                                    {rank}{isUsed ? ' (already used)' : ''}
+                                  </option>
+                                );
+                              })}
+                            </select>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block mb-3 text-gray-700">
                     How would you rate your overall stress level?
                   </label>
-                  <select
-                    id="stressLevel"
-                    name="stressLevel"
-                    value={formData.stressLevel}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
-                  >
-                    <option value="">Select...</option>
-                    <option value="very-low">Very Low</option>
-                    <option value="low">Low</option>
-                    <option value="moderate">Moderate</option>
-                    <option value="high">High</option>
-                    <option value="very-high">Very High</option>
-                  </select>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {[
+                      { value: 'very-low', label: 'Very Low' },
+                      { value: 'low', label: 'Low' },
+                      { value: 'moderate', label: 'Moderate' },
+                      { value: 'high', label: 'High' },
+                      { value: 'very-high', label: 'Very High' }
+                    ].map((option) => (
+                      <label key={option.value}>
+                        <input
+                          type="radio"
+                          name="stressLevel"
+                          value={option.value}
+                          checked={formData.stressLevel === option.value}
+                          onChange={handleChange}
+                          className="peer sr-only"
+                        />
+                        <div className="p-3 w-[140px] text-center border border-gray-300 rounded-lg cursor-pointer transition-all peer-checked:bg-teal-600 peer-checked:text-white peer-checked:border-teal-600 hover:border-teal-400">
+                          <span>{option.label}</span>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

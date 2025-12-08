@@ -1,5 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import pcosImage from 'figma:asset/d811313cf936f3f034bb44f185987dda85afd784.png';
 
 interface HomePageProps {
   onNavigate: (page: string) => void;
@@ -10,6 +11,17 @@ export function HomePage({ onNavigate }: HomePageProps) {
     <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white">
       {/* Hero Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+        {/* Header Image */}
+        <div className="mb-12 relative overflow-hidden rounded-2xl shadow-xl">
+          <div className="relative h-64 md:h-80">
+            <ImageWithFallback
+              src={pcosImage}
+              alt="Polycystic Ovary Ultrasound"
+              className="w-full h-full object-cover opacity-40"
+            />
+          </div>
+        </div>
+
         <div className="text-center">
           <h1 className="text-teal-600 mb-4">
             PCOS PhD Research
