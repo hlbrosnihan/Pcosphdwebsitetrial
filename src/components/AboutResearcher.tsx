@@ -1,5 +1,6 @@
 import { Mail, Linkedin, GraduationCap, Award, BookOpen } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import researcherImage from 'figma:asset/595a855a0b3d852c95deb846a99baaec3ede9b5a.png';
 
 export function AboutResearcher() {
   return (
@@ -11,8 +12,8 @@ export function AboutResearcher() {
             <div className="md:col-span-1">
               <div className="aspect-square rounded-lg overflow-hidden mb-6">
                 <ImageWithFallback
-                  src="https://images.unsplash.com/photo-1631203883080-9e5338ebcf2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmZW1hbGUlMjByZXNlYXJjaGVyJTIwc2NpZW50aXN0fGVufDF8fHx8MTc2MjM0MTAxOXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-                  alt="Researcher"
+                  src={researcherImage}
+                  alt="Hilary B Wray"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -30,23 +31,13 @@ export function AboutResearcher() {
             </div>
 
             <div className="md:col-span-2">
-              <h1 className="mb-2">Dr. Sarah Johnson</h1>
-              <p className="text-teal-600 mb-6">PhD Candidate in Reproductive Endocrinology</p>
+              <h1 className="mb-2">Hilary B Wray</h1>
+              <p className="text-teal-600 mb-6">PhD Candidate in Arts and Creative Cultures Research Centre</p>
               
               <div className="prose max-w-none">
-                <p className="text-gray-600 mb-4">
-                  I am a dedicated researcher specializing in Polycystic Ovary Syndrome (PCOS), with a focus on
-                  understanding the metabolic and hormonal mechanisms underlying this complex condition. My research
-                  aims to bridge the gap between basic science and clinical applications to improve diagnostic tools
-                  and treatment outcomes for individuals affected by PCOS.
-                </p>
+                <p className="text-gray-600 mb-4">I am a dedicated researcher specializing in Polycystic Ovary Syndrome (PCOS), with a focus on understanding the lived experience of this complex condition, as well as, the digital interventions related to self-management with in the NHS.&nbsp;&nbsp;My research aims to bridge the gap between lived experience, user interface design and clinical applications to improve self-management for individuals affected by PCOS. This focus is on preventive care.</p>
                 
-                <p className="text-gray-600 mb-4">
-                  With a background in molecular biology and endocrinology, I employ multidisciplinary approaches
-                  including genomics, metabolomics, and clinical research to investigate the heterogeneous nature of
-                  PCOS. My work is driven by the belief that personalized medicine approaches will be key to addressing
-                  the diverse presentations and needs of PCOS patients.
-                </p>
+                <p className="text-gray-600 mb-4">With a background in Product Design and UX/UI, I employ multidisciplinary approaches&nbsp;&nbsp;to investigate the self-management of PCOS by looking at lived experience and digital usage both in a clinical environment and personal private product experience.&nbsp;&nbsp;&nbsp;My work is driven by the belief that personalized and preventive approaches will be key to addressing the diverse presentations and needs of PCOS patients.</p>
               </div>
             </div>
           </div>
@@ -64,21 +55,21 @@ export function AboutResearcher() {
             
             <div className="space-y-4">
               <div>
-                <p className="text-gray-900">PhD in Reproductive Endocrinology</p>
-                <p className="text-gray-600">University of Medical Sciences</p>
-                <p className="text-gray-500">2021 - Present</p>
+                <p className="text-gray-900">PhD in Postdigital Cultures and Digital Health</p>
+                <p className="text-gray-600">Coventry University</p>
+                <p className="text-gray-500">2024 - Present</p>
               </div>
               
               <div>
-                <p className="text-gray-900">MSc in Molecular Biology</p>
-                <p className="text-gray-600">Institute of Biological Sciences</p>
-                <p className="text-gray-500">2018 - 2020</p>
+                <p className="text-gray-900">MDes in Consumer Product Design</p>
+                <p className="text-gray-600">Coventry University</p>
+                <p className="text-gray-500">2008 - 2010</p>
               </div>
               
               <div>
-                <p className="text-gray-900">BSc in Biochemistry</p>
-                <p className="text-gray-600">State University</p>
-                <p className="text-gray-500">2014 - 2018</p>
+                <p className="text-gray-900">BSc in Computer Art and Computer Science</p>
+                <p className="text-gray-600">State University of New York College at Oneonta </p>
+                <p className="text-gray-500">2003 - 2006</p>
               </div>
             </div>
           </div>
@@ -93,8 +84,8 @@ export function AboutResearcher() {
             
             <div className="space-y-4">
               <div>
-                <p className="text-gray-900">Young Researcher Award</p>
-                <p className="text-gray-600">International PCOS Society</p>
+                <p className="text-gray-900">Midlands 4 Cities Scholarship </p>
+                <p className="text-gray-600">M4C</p>
                 <p className="text-gray-500">2024</p>
               </div>
               
@@ -114,7 +105,11 @@ export function AboutResearcher() {
         </div>
 
         {/* Publications */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg shadow-sm p-6 relative overflow-hidden opacity-60">
+          {/* Coming Soon Banner */}
+          <div className="absolute top-6 -right-12 bg-teal-600 text-white px-12 py-1 transform rotate-45 text-sm font-bold shadow-lg">
+            COMING SOON
+          </div>
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
               <BookOpen className="text-teal-600" size={20} />
@@ -123,26 +118,9 @@ export function AboutResearcher() {
           </div>
           
           <div className="space-y-4">
-            <div className="border-l-4 border-teal-600 pl-4">
-              <p className="text-gray-900 mb-1">
-                Johnson, S., et al. (2024). "Metabolic signatures in PCOS: A comprehensive analysis."
-                <span className="italic"> Journal of Reproductive Endocrinology</span>, 45(3), 234-251.
-              </p>
-            </div>
-            
-            <div className="border-l-4 border-teal-600 pl-4">
-              <p className="text-gray-900 mb-1">
-                Smith, A., Johnson, S., & Brown, K. (2023). "Hormonal pathways in polycystic ovary syndrome."
-                <span className="italic"> Endocrine Reviews</span>, 38(2), 112-128.
-              </p>
-            </div>
-            
-            <div className="border-l-4 border-teal-600 pl-4">
-              <p className="text-gray-900 mb-1">
-                Johnson, S., & Williams, R. (2023). "Novel biomarkers for PCOS diagnosis: A systematic review."
-                <span className="italic"> Clinical Endocrinology</span>, 92(4), 445-462.
-              </p>
-            </div>
+            <p className="text-gray-500 text-center py-8">
+              Publication list will be available soon.
+            </p>
           </div>
         </div>
       </div>

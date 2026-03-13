@@ -40,7 +40,14 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
               alt="Research Collaboration"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-teal-900/90 to-teal-600/70 flex items-center">
+            <div 
+              className="absolute inset-0 flex items-center"
+              style={{
+                backgroundImage: `linear-gradient(to right, rgba(17, 94, 89, 0.9), rgba(13, 148, 136, 0.7)), url('https://images.unsplash.com/photo-1610985725707-bb0766bf123b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXJpb2QlMjB0cmFja2luZyUyMGFwcCUyMG1vYmlsZSUyMHBob25lfGVufDF8fHx8MTc3MjQ3MTM3NXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
+            >
               <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-white text-center">
                 <h1 className="text-white mb-4">Join Our Research Study</h1>
                 <p className="text-teal-50">

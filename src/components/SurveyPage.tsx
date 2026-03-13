@@ -1,10 +1,18 @@
-import { ClipboardList, AlertCircle, CheckCircle2, Frown, Meh, Smile, FrownIcon, SmileIcon } from 'lucide-react';
+import { ClipboardList, AlertCircle, CheckCircle2, Frown, Meh, Smile, FrownIcon, SmileIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { useState } from 'react';
 
 export function SurveyPage() {
   const [currentSection, setCurrentSection] = useState(0);
   const [formData, setFormData] = useState({
+    // Consent
+    consentUnderstands: false,
+    consentVoluntary: false,
+    consentDataUse: false,
+    consentWithdraw: false,
+    consentAge: false,
+    signature: '',
+    
     // Demographics
     name: '',
     email: '',
@@ -57,6 +65,8 @@ export function SurveyPage() {
     exerciseFrequency: '',
     dietType: '',
     sleepHours: '',
+    vitamins: [] as string[],
+    vitaminsOther: '',
     socialMediaTime: '',
     socialMediaNetworks: [] as string[],
     socialMediaOther: '',
@@ -73,12 +83,13 @@ export function SurveyPage() {
   });
 
   const sections = [
+    { title: 'Consent', icon: '✍️' },
     { title: 'Demographics', icon: '👤' },
     { title: 'PCOS Diagnosis', icon: '🏥' },
+    { title: 'Quality of Life', icon: '❤️' },
     { title: 'Digital App Usage', icon: '📱' },
     { title: 'Medical History', icon: '📋' },
     { title: 'Lifestyle Factors', icon: '🏃' },
-    { title: 'Quality of Life', icon: '❤️' },
     { title: 'Additional Information', icon: '📝' }
   ];
 
@@ -89,8 +100,39 @@ export function SurveyPage() {
     });
   };
 
-  const handleCheckboxChange = (field: 'symptoms' | 'previousTreatments' | 'nhsAppFeatures' | 'periodTrackerApps' | 'nutritionApps' | 'socialMediaNetworks', value: string) => {
+  const handleConsentChange = (field: string) => {
+    setFormData({
+      ...formData,
+      [field]: !formData[field as keyof typeof formData]
+    });
+  };
+
+  const handleCheckboxChange = (field: 'symptoms' | 'previousTreatments' | 'nhsAppFeatures' | 'periodTrackerApps' | 'nutritionApps' | 'vitamins' | 'socialMediaNetworks', value: string) => {
     const currentValues = formData[field];
+    
+    // Special handling for vitamins "None" option
+    if (field === 'vitamins') {
+      if (value === 'None') {
+        // If "None" is selected, clear all other selections and set only "None"
+        const newValues = currentValues.includes('None') ? [] : ['None'];
+        setFormData({
+          ...formData,
+          [field]: newValues
+        });
+        return;
+      } else {
+        // If any other vitamin is selected, remove "None" from selections
+        const newValues = currentValues.includes(value)
+          ? currentValues.filter(v => v !== value)
+          : [...currentValues.filter(v => v !== 'None'), value];
+        setFormData({
+          ...formData,
+          [field]: newValues
+        });
+        return;
+      }
+    }
+    
     const newValues = currentValues.includes(value)
       ? currentValues.filter(v => v !== value)
       : [...currentValues, value];
@@ -138,6 +180,22 @@ export function SurveyPage() {
   };
 
   const nextSection = () => {
+    // Validate consent section before proceeding
+    if (currentSection === 0) {
+      const allConsentsChecked = 
+        formData.consentUnderstands &&
+        formData.consentVoluntary &&
+        formData.consentDataUse &&
+        formData.consentWithdraw &&
+        formData.consentAge &&
+        formData.signature.trim() !== '';
+      
+      if (!allConsentsChecked) {
+        alert('Please read and agree to all consent statements and provide your signature to continue.');
+        return;
+      }
+    }
+    
     if (currentSection < sections.length - 1) {
       setCurrentSection(currentSection + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -205,11 +263,25 @@ export function SurveyPage() {
             />
           </div>
           
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
             {sections.map((section, index) => (
               <button
                 key={index}
-                onClick={() => setCurrentSection(index)}
+                onClick={() => {
+                  // Only allow navigation if consent is completed or going back to consent
+                  if (index === 0 || (
+                    formData.consentUnderstands &&
+                    formData.consentVoluntary &&
+                    formData.consentDataUse &&
+                    formData.consentWithdraw &&
+                    formData.consentAge &&
+                    formData.signature.trim() !== ''
+                  )) {
+                    setCurrentSection(index);
+                  } else {
+                    alert('Please complete the consent form first.');
+                  }
+                }}
                 className={`p-2 rounded-lg text-center transition-all ${
                   index === currentSection
                     ? 'bg-teal-600 text-white'
@@ -230,8 +302,129 @@ export function SurveyPage() {
           <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
             <h2 className="mb-6">{sections[currentSection].title}</h2>
 
-            {/* Demographics Section */}
+            {/* Consent Section */}
             {currentSection === 0 && (
+              <div className="space-y-6">
+                <div className="bg-teal-50 border border-teal-200 rounded-lg p-6 mb-6">
+                  <h3 className="text-teal-900 mb-4">Research Consent Form</h3>
+                  <div className="prose max-w-none text-gray-700 space-y-3">
+                    <p></p>
+                    <p> The purpose of the research is to gain an overview of routes into Polycystic Ovarian Syndrome care, 
+                      including where, when, and by whom digital interventions are used. What they are and how their users 
+                      experience them. The study is to help inform a heuristic evaluation of applications that are used by 
+                      patients with PCOS by asking patients first what they are using, why, and what it does for them, related 
+                      to their PCOS.</p>
+                    <p> <strong>What Your Participation Involves:</strong>You will be asked to complete a survey that takes approximately 15-20 minutes. The survey includes questions about your demographics, PCOS diagnosis, digital app usage, medical history, lifestyle factors, and quality of life. The research project is being conducted by Hilary Wray at Coventry University. You have been selected to take part in this questionnaire survey because you have a diagnosis of Polycystic Ovary Syndrome. Your participation in the survey is entirely voluntary, and you can opt out at any stage by closing and exiting the browser. If you are happy to take part, please answer the following questions relating to PCOS treatment routes and digital usage. Your answers will help us to understand how you found out about your PCOS and what tools you are using to help manage it. As well as how these different interactions impact how you feel.</p>
+                    <p>
+                      <strong>Confidentiality:</strong> All information you provide will be kept strictly confidential. 
+                      Your data will be anonymized and stored securely in compliance with GDPR and data protection 
+                      regulations. Your personal information will not be shared with third parties.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <p className="text-gray-700 font-semibold">
+                    Please confirm that you understand and agree to the following:
+                  </p>
+                  
+                  <label className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer border-2 border-transparent hover:border-teal-200 transition-all">
+                    <input
+                      type="checkbox"
+                      checked={formData.consentUnderstands}
+                      onChange={() => handleConsentChange('consentUnderstands')}
+                      className="w-5 h-5 text-teal-600 rounded focus:ring-teal-600 mt-0.5 flex-shrink-0"
+                    />
+                    <span className="text-gray-700">
+                      I have read and understood the purpose of this research study and what my participation involves.
+                    </span>
+                  </label>
+
+                  <label className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer border-2 border-transparent hover:border-teal-200 transition-all">
+                    <input
+                      type="checkbox"
+                      checked={formData.consentVoluntary}
+                      onChange={() => handleConsentChange('consentVoluntary')}
+                      className="w-5 h-5 text-teal-600 rounded focus:ring-teal-600 mt-0.5 flex-shrink-0"
+                    />
+                    <span className="text-gray-700">
+                      I understand that my participation is voluntary and I can withdraw at any time without providing a reason.
+                    </span>
+                  </label>
+
+                  <label className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer border-2 border-transparent hover:border-teal-200 transition-all">
+                    <input
+                      type="checkbox"
+                      checked={formData.consentDataUse}
+                      onChange={() => handleConsentChange('consentDataUse')}
+                      className="w-5 h-5 text-teal-600 rounded focus:ring-teal-600 mt-0.5 flex-shrink-0"
+                    />
+                    <span className="text-gray-700">
+                      I consent to my anonymized data being used for research purposes, including potential publication in academic journals and presentations.
+                    </span>
+                  </label>
+
+                  <label className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer border-2 border-transparent hover:border-teal-200 transition-all">
+                    <input
+                      type="checkbox"
+                      checked={formData.consentWithdraw}
+                      onChange={() => handleConsentChange('consentWithdraw')}
+                      className="w-5 h-5 text-teal-600 rounded focus:ring-teal-600 mt-0.5 flex-shrink-0"
+                    />
+                    <span className="text-gray-700">
+                      I understand that I have the right to request withdrawal of my data up until it has been anonymized and incorporated into the research analysis.
+                    </span>
+                  </label>
+
+                  <label className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer border-2 border-transparent hover:border-teal-200 transition-all">
+                    <input
+                      type="checkbox"
+                      checked={formData.consentAge}
+                      onChange={() => handleConsentChange('consentAge')}
+                      className="w-5 h-5 text-teal-600 rounded focus:ring-teal-600 mt-0.5 flex-shrink-0"
+                    />
+                    <span className="text-gray-700">
+                      I confirm that I am 18 years of age or older.
+                    </span>
+                  </label>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <label htmlFor="signature" className="block mb-3 text-gray-700 font-semibold">
+                    Electronic Signature *
+                  </label>
+                  <p className="text-sm text-gray-600 mb-3">
+                    By typing your full name below, you are providing your electronic signature and consent to participate in this study.
+                  </p>
+                  <input
+                    type="text"
+                    id="signature"
+                    name="signature"
+                    value={formData.signature}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent font-serif text-lg"
+                    placeholder="Type your full name here"
+                  />
+                  {formData.signature && (
+                    <p className="mt-2 text-sm text-teal-600">
+                      ✓ Signature provided: {formData.signature}
+                    </p>
+                  )}
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+                  <div className="flex gap-3">
+                    <AlertCircle className="text-blue-600 flex-shrink-0" size={20} />
+                    <p className="text-sm text-blue-800">
+                      You must agree to all consent statements and provide your signature before proceeding to the survey.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Demographics Section */}
+            {currentSection === 1 && (
               <div className="space-y-6">
                 <div>
                   <label htmlFor="name" className="block mb-2 text-gray-700">
@@ -290,13 +483,23 @@ export function SurveyPage() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
                   >
                     <option value="">Select...</option>
-                    <option value="white">White</option>
-                    <option value="black">Black or African American</option>
-                    <option value="asian">Asian</option>
-                    <option value="hispanic">Hispanic or Latino</option>
-                    <option value="native">Native American or Alaska Native</option>
-                    <option value="pacific">Native Hawaiian or Pacific Islander</option>
-                    <option value="mixed">Two or more races</option>
+                    <option value="white-british">White British</option>
+                    <option value="white-irish">White Irish</option>
+                    <option value="white-gypsy">White Gypsy or Irish Traveller</option>
+                    <option value="white-other">White Other</option>
+                    <option value="mixed-white-black-caribbean">Mixed White and Black Caribbean</option>
+                    <option value="mixed-white-black-african">Mixed White and Black African</option>
+                    <option value="mixed-white-asian">Mixed White and Asian</option>
+                    <option value="mixed-other">Mixed Other</option>
+                    <option value="asian-indian">Asian - Indian</option>
+                    <option value="asian-pakistani">Asian - Pakistani</option>
+                    <option value="asian-bangladeshi">Asian - Bangladeshi</option>
+                    <option value="asian-chinese">Asian - Chinese</option>
+                    <option value="asian-other">Asian Other</option>
+                    <option value="black-african">Black African</option>
+                    <option value="black-caribbean">Black Caribbean</option>
+                    <option value="black-other">Black Other</option>
+                    <option value="arab">Arab</option>
                     <option value="other">Other</option>
                     <option value="prefer-not">Prefer not to answer</option>
                   </select>
@@ -305,7 +508,7 @@ export function SurveyPage() {
             )}
 
             {/* PCOS Diagnosis Section */}
-            {currentSection === 1 && (
+            {currentSection === 2 && (
               <div className="space-y-6">
                 <div>
                   <label htmlFor="diagnosisAge" className="block mb-2 text-gray-700">
@@ -424,7 +627,7 @@ export function SurveyPage() {
             )}
 
             {/* Digital App Usage Section */}
-            {currentSection === 2 && (
+            {currentSection === 4 && (
               <div className="space-y-6">
                 {/* NHS App */}
                 <div>
@@ -644,14 +847,14 @@ export function SurveyPage() {
                                   .filter(([appName, _]) => appName !== app)
                                   .map(([_, rank]) => rank);
                                 return (
-                                  <div key={app} className="flex items-center gap-4 bg-white p-3 rounded-lg">
-                                    <span className="text-gray-700 flex-1">{displayName}</span>
+                                  <div key={app} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 bg-white p-3 rounded-lg">
+                                    <span className="text-gray-700 sm:flex-1">{displayName}</span>
                                     <select
                                       value={formData.periodTrackerRankings[app] || ''}
                                       onChange={(e) => handleAppRankingChange(app, e.target.value, 'periodTrackerRankings')}
-                                      className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
+                                      className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 w-full sm:w-auto sm:min-w-[200px]"
                                     >
-                                      <option value="">Select rank...</option>
+                                      <option value="">{formData.periodTrackerRankings[app] ? 'Re-select rank...' : 'Select rank...'}</option>
                                       {Array.from({ length: formData.periodTrackerApps.length }, (_, i) => i + 1).map((rank) => {
                                         const rankStr = rank.toString();
                                         const isUsed = usedRanks.includes(rankStr);
@@ -685,7 +888,7 @@ export function SurveyPage() {
                                     <div className="mb-3">
                                       <span className="text-gray-700">{displayName}</span>
                                     </div>
-                                    <div className="flex justify-between items-center gap-2">
+                                    <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3">
                                       {[
                                         { value: 'works-very-well', icon: SmileIcon, label: 'Works Very Well', color: 'text-green-600' },
                                         { value: 'works-well', icon: Smile, label: 'Works Well', color: 'text-green-500' },
@@ -700,14 +903,14 @@ export function SurveyPage() {
                                             key={option.value}
                                             type="button"
                                             onClick={() => handleAppEffectivenessChange(app, option.value, 'periodTrackerEffectiveness')}
-                                            className={`flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                                            className={`w-[60px] h-[85px] sm:w-[80px] sm:h-[95px] flex flex-col items-center justify-center gap-1 sm:gap-2 p-2 sm:p-3 rounded-lg border-2 transition-all ${
                                               isSelected 
                                                 ? 'border-teal-600 bg-teal-50' 
                                                 : 'border-gray-200 hover:border-gray-300 bg-white'
                                             }`}
                                           >
-                                            <Icon size={28} className={isSelected ? 'text-teal-600' : option.color} />
-                                            <span className={`text-xs text-center ${isSelected ? 'text-teal-700' : 'text-gray-600'}`}>
+                                            <Icon size={24} className={isSelected ? 'text-teal-600' : option.color} />
+                                            <span className={`text-xs text-center leading-tight ${isSelected ? 'text-teal-700' : 'text-gray-600'}`}>
                                               {option.label}
                                             </span>
                                           </button>
@@ -840,14 +1043,14 @@ export function SurveyPage() {
                                   .filter(([appName, _]) => appName !== app)
                                   .map(([_, rank]) => rank);
                                 return (
-                                  <div key={app} className="flex items-center gap-4 bg-white p-3 rounded-lg">
-                                    <span className="text-gray-700 flex-1">{displayName}</span>
+                                  <div key={app} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 bg-white p-3 rounded-lg">
+                                    <span className="text-gray-700 sm:flex-1">{displayName}</span>
                                     <select
                                       value={formData.nutritionAppRankings[app] || ''}
                                       onChange={(e) => handleAppRankingChange(app, e.target.value, 'nutritionAppRankings')}
-                                      className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
+                                      className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 w-full sm:w-auto sm:min-w-[200px]"
                                     >
-                                      <option value="">Select rank...</option>
+                                      <option value="">{formData.nutritionAppRankings[app] ? 'Re-select rank...' : 'Select rank...'}</option>
                                       {Array.from({ length: formData.nutritionApps.length }, (_, i) => i + 1).map((rank) => {
                                         const rankStr = rank.toString();
                                         const isUsed = usedRanks.includes(rankStr);
@@ -881,7 +1084,7 @@ export function SurveyPage() {
                                     <div className="mb-3">
                                       <span className="text-gray-700">{displayName}</span>
                                     </div>
-                                    <div className="flex justify-between items-center gap-2">
+                                    <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3">
                                       {[
                                         { value: 'works-very-well', icon: SmileIcon, label: 'Works Very Well', color: 'text-green-600' },
                                         { value: 'works-well', icon: Smile, label: 'Works Well', color: 'text-green-500' },
@@ -896,14 +1099,14 @@ export function SurveyPage() {
                                             key={option.value}
                                             type="button"
                                             onClick={() => handleAppEffectivenessChange(app, option.value, 'nutritionAppEffectiveness')}
-                                            className={`flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                                            className={`w-[60px] h-[85px] sm:w-[80px] sm:h-[95px] flex flex-col items-center justify-center gap-1 sm:gap-2 p-2 sm:p-3 rounded-lg border-2 transition-all ${
                                               isSelected 
                                                 ? 'border-teal-600 bg-teal-50' 
                                                 : 'border-gray-200 hover:border-gray-300 bg-white'
                                             }`}
                                           >
-                                            <Icon size={28} className={isSelected ? 'text-teal-600' : option.color} />
-                                            <span className={`text-xs text-center ${isSelected ? 'text-teal-700' : 'text-gray-600'}`}>
+                                            <Icon size={24} className={isSelected ? 'text-teal-600' : option.color} />
+                                            <span className={`text-xs text-center leading-tight ${isSelected ? 'text-teal-700' : 'text-gray-600'}`}>
                                               {option.label}
                                             </span>
                                           </button>
@@ -1003,7 +1206,7 @@ export function SurveyPage() {
             )}
 
             {/* Medical History Section */}
-            {currentSection === 3 && (
+            {currentSection === 5 && (
               <div className="space-y-6">
                 <div>
                   <label className="block mb-3 text-gray-700">
@@ -1124,7 +1327,7 @@ export function SurveyPage() {
             )}
 
             {/* Lifestyle Factors Section */}
-            {currentSection === 4 && (
+            {currentSection === 6 && (
               <div className="space-y-6">
                 <div>
                   <label className="block mb-3 text-gray-700">
@@ -1218,6 +1421,54 @@ export function SurveyPage() {
 
                 <div>
                   <label className="block mb-3 text-gray-700">
+                    What vitamins or supplements do you take? (Select all that apply)
+                  </label>
+                  <div className="space-y-2">
+                    {[
+                      'Vitamin D',
+                      'Vitamin B12',
+                      'Vitamin C',
+                      'Folic Acid',
+                      'Iron',
+                      'Calcium',
+                      'Magnesium',
+                      'Omega-3/Fish Oil',
+                      'Zinc',
+                      'Probiotics',
+                      'Multivitamin',
+                      'Inositol',
+                      'NAC (N-Acetyl Cysteine)',
+                      'Other',
+                      'None'
+                    ].map((vitamin) => (
+                      <label key={vitamin} className={`flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer ${formData.vitamins.includes('None') && vitamin !== 'None' ? 'opacity-50' : ''}`}>
+                        <input
+                          type="checkbox"
+                          checked={formData.vitamins.includes(vitamin)}
+                          onChange={() => handleCheckboxChange('vitamins', vitamin)}
+                          disabled={formData.vitamins.includes('None') && vitamin !== 'None'}
+                          className="w-4 h-4 text-teal-600 rounded focus:ring-teal-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        />
+                        <span className="text-gray-700">{vitamin}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {formData.vitamins.includes('Other') && (
+                    <div className="mt-3">
+                      <input
+                        type="text"
+                        name="vitaminsOther"
+                        value={formData.vitaminsOther}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
+                        placeholder="Please specify other vitamins or supplements"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block mb-3 text-gray-700">
                     How much time do you spend on social media?
                   </label>
                   <div className="flex flex-wrap gap-2 justify-center">
@@ -1301,14 +1552,14 @@ export function SurveyPage() {
                           .filter(([net, _]) => net !== network)
                           .map(([_, rank]) => rank);
                         return (
-                          <div key={network} className="flex items-center gap-4 bg-white p-3 rounded-lg">
-                            <span className="text-gray-700 flex-1">{displayName}</span>
+                          <div key={network} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 bg-white p-3 rounded-lg">
+                            <span className="text-gray-700 sm:flex-1">{displayName}</span>
                             <select
                               value={formData.socialMediaRankings[network] || ''}
                               onChange={(e) => handleRankingChange(network, e.target.value)}
-                              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
+                              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 w-full sm:w-auto sm:min-w-[200px]"
                             >
-                              <option value="">Select rank...</option>
+                              <option value="">{formData.socialMediaRankings[network] ? 'Re-select rank...' : 'Select rank...'}</option>
                               {Array.from({ length: formData.socialMediaNetworks.length }, (_, i) => i + 1).map((rank) => {
                                 const rankStr = rank.toString();
                                 const isUsed = usedRanks.includes(rankStr);
@@ -1358,14 +1609,14 @@ export function SurveyPage() {
             )}
 
             {/* Quality of Life Section */}
-            {currentSection === 5 && (
+            {currentSection === 3 && (
               <div className="space-y-8">
                 {/* Physical Well-being */}
                 <div>
                   <label className="block mb-4 text-gray-700">
                     How would you rate your physical well-being?
                   </label>
-                  <div className="flex justify-between items-center gap-3 max-w-2xl">
+                  <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3 max-w-2xl">
                     {[
                       { value: 'poor', emoji: '😢', label: 'Poor', color: 'red' },
                       { value: 'fair', emoji: '😕', label: 'Fair', color: 'orange' },
@@ -1377,14 +1628,14 @@ export function SurveyPage() {
                         key={option.value}
                         type="button"
                         onClick={() => setFormData({ ...formData, physicalWellbeing: option.value })}
-                        className={`flex-1 p-4 rounded-xl border-2 transition-all hover:scale-105 ${
+                        className={`w-[65px] h-[95px] sm:w-[95px] sm:h-[110px] flex flex-col items-center justify-center p-2 sm:p-4 rounded-xl border-2 transition-all hover:scale-105 ${
                           formData.physicalWellbeing === option.value
                             ? 'border-teal-600 bg-teal-50 shadow-lg scale-105'
                             : 'border-gray-300 bg-white hover:border-gray-400'
                         }`}
                       >
-                        <div className="text-4xl mb-2">{option.emoji}</div>
-                        <div className="text-sm text-gray-700">{option.label}</div>
+                        <div className="text-3xl sm:text-4xl mb-2">{option.emoji}</div>
+                        <div className="text-xs sm:text-sm text-gray-700 leading-tight">{option.label}</div>
                       </button>
                     ))}
                   </div>
@@ -1395,7 +1646,7 @@ export function SurveyPage() {
                   <label className="block mb-4 text-gray-700">
                     How would you rate your emotional well-being?
                   </label>
-                  <div className="flex justify-between items-center gap-3 max-w-2xl">
+                  <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3 max-w-2xl">
                     {[
                       { value: 'poor', emoji: '😢', label: 'Poor', color: 'red' },
                       { value: 'fair', emoji: '😕', label: 'Fair', color: 'orange' },
@@ -1407,14 +1658,14 @@ export function SurveyPage() {
                         key={option.value}
                         type="button"
                         onClick={() => setFormData({ ...formData, emotionalWellbeing: option.value })}
-                        className={`flex-1 p-4 rounded-xl border-2 transition-all hover:scale-105 ${
+                        className={`w-[65px] h-[95px] sm:w-[95px] sm:h-[110px] flex flex-col items-center justify-center p-2 sm:p-4 rounded-xl border-2 transition-all hover:scale-105 ${
                           formData.emotionalWellbeing === option.value
                             ? 'border-teal-600 bg-teal-50 shadow-lg scale-105'
                             : 'border-gray-300 bg-white hover:border-gray-400'
                         }`}
                       >
-                        <div className="text-4xl mb-2">{option.emoji}</div>
-                        <div className="text-sm text-gray-700">{option.label}</div>
+                        <div className="text-3xl sm:text-4xl mb-2">{option.emoji}</div>
+                        <div className="text-xs sm:text-sm text-gray-700 leading-tight">{option.label}</div>
                       </button>
                     ))}
                   </div>
@@ -1425,7 +1676,7 @@ export function SurveyPage() {
                   <label className="block mb-4 text-gray-700">
                     How much does PCOS impact your social life?
                   </label>
-                  <div className="flex justify-between items-center gap-3 max-w-2xl">
+                  <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3 max-w-2xl">
                     {[
                       { value: 'not-at-all', emoji: '😊', label: 'Not at all', color: 'green' },
                       { value: 'slightly', emoji: '🙂', label: 'Slightly', color: 'lime' },
@@ -1437,14 +1688,14 @@ export function SurveyPage() {
                         key={option.value}
                         type="button"
                         onClick={() => setFormData({ ...formData, socialImpact: option.value })}
-                        className={`flex-1 p-4 rounded-xl border-2 transition-all hover:scale-105 ${
+                        className={`w-[65px] h-[95px] sm:w-[95px] sm:h-[110px] flex flex-col items-center justify-center p-2 sm:p-4 rounded-xl border-2 transition-all hover:scale-105 ${
                           formData.socialImpact === option.value
                             ? 'border-teal-600 bg-teal-50 shadow-lg scale-105'
                             : 'border-gray-300 bg-white hover:border-gray-400'
                         }`}
                       >
-                        <div className="text-4xl mb-2">{option.emoji}</div>
-                        <div className="text-sm text-gray-700">{option.label}</div>
+                        <div className="text-3xl sm:text-4xl mb-2">{option.emoji}</div>
+                        <div className="text-xs sm:text-sm text-gray-700 leading-tight">{option.label}</div>
                       </button>
                     ))}
                   </div>
@@ -1453,7 +1704,7 @@ export function SurveyPage() {
             )}
 
             {/* Additional Information Section */}
-            {currentSection === 6 && (
+            {currentSection === 7 && (
               <div className="space-y-6">
                 <div>
                   <label htmlFor="additionalComments" className="block mb-2 text-gray-700">
@@ -1488,22 +1739,23 @@ export function SurveyPage() {
           </div>
 
           {/* Navigation Buttons */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex justify-between items-center">
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
               <button
                 type="button"
                 onClick={prevSection}
                 disabled={currentSection === 0}
-                className={`px-6 py-3 rounded-lg transition-colors ${
+                className={`w-full sm:w-auto px-4 sm:px-6 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 ${
                   currentSection === 0
                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
-                ← Previous
+                <ChevronLeft className="w-5 h-5" />
+                <span>Previous</span>
               </button>
 
-              <div className="text-gray-600">
+              <div className="text-gray-600 text-sm sm:text-base order-first sm:order-none">
                 Step {currentSection + 1} of {sections.length}
               </div>
 
@@ -1511,14 +1763,15 @@ export function SurveyPage() {
                 <button
                   type="button"
                   onClick={nextSection}
-                  className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center justify-center gap-2"
                 >
-                  Next →
+                  <span>Next</span>
+                  <ChevronRight className="w-5 h-5" />
                 </button>
               ) : (
                 <button
                   type="submit"
-                  className="px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
                 >
                   Submit Survey
                 </button>

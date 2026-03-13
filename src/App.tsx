@@ -6,9 +6,11 @@ import { AboutResearcher } from './components/AboutResearcher';
 import { AboutResearch } from './components/AboutResearch';
 import { JoinResearch } from './components/JoinResearch';
 import { SurveyPage } from './components/SurveyPage';
+import { ContactFormModal } from './components/ContactFormModal';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
+  const [isContactFormOpen, setIsContactFormOpen] = useState(false);
 
   const renderPage = () => {
     switch (currentPage) {
@@ -38,30 +40,16 @@ export default function App() {
           <div className="grid md:grid-cols-3 gap-8">
             <div>
               <h3 className="text-white mb-4">PCOS PhD</h3>
-              <p className="text-teal-200">
-                Advancing PCOS research through innovative scientific inquiry and evidence-based insights.
-              </p>
+              <p className="text-teal-200">Advancing PCOS research through lived experience, innovative and integration.</p>
             </div>
             <div>
               <h3 className="text-white mb-4">Quick Links</h3>
               <div className="space-y-2">
                 <button
-                  onClick={() => setCurrentPage('blog')}
-                  className="block text-teal-200 hover:text-white transition-colors"
-                >
-                  Blog
-                </button>
-                <button
                   onClick={() => setCurrentPage('researcher')}
                   className="block text-teal-200 hover:text-white transition-colors"
                 >
                   About Researcher
-                </button>
-                <button
-                  onClick={() => setCurrentPage('research')}
-                  className="block text-teal-200 hover:text-white transition-colors"
-                >
-                  About Research
                 </button>
                 <button
                   onClick={() => setCurrentPage('join')}
@@ -73,16 +61,31 @@ export default function App() {
             </div>
             <div>
               <h3 className="text-white mb-4">Contact</h3>
-              <p className="text-teal-200">
-                For research inquiries or collaboration opportunities, please reach out via the contact form.
+              <p className="text-teal-200 mb-4">
+                For research inquiries or collaboration opportunities, please reach out:
               </p>
+              <div className="space-y-2">
+                <a 
+                  href="mailto:wrayh@uni.coventry.ac.uk"
+                  className="block text-teal-200 hover:text-white transition-colors"
+                >
+                  wrayh@uni.coventry.ac.uk
+                </a>
+                <button
+                  onClick={() => setIsContactFormOpen(true)}
+                  className="block text-teal-200 hover:text-white transition-colors"
+                >
+                  Contact Form
+                </button>
+              </div>
             </div>
           </div>
           <div className="border-t border-teal-900 mt-8 pt-8 text-center text-teal-200">
-            <p>&copy; 2025 PCOS PhD Research. All rights reserved.</p>
+            <p>© 2025&nbsp;&nbsp;Hilary B Wray All rights reserved.</p>
           </div>
         </div>
       </footer>
+      <ContactFormModal isOpen={isContactFormOpen} onClose={() => setIsContactFormOpen(false)} />
     </div>
   );
 }
