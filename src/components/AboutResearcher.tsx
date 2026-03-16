@@ -1,6 +1,5 @@
 import { Mail, Linkedin, GraduationCap, Award, BookOpen } from 'lucide-react';
-import { ImageWithFallback } from './figma/ImageWithFallback';
-import researcherImage from 'figma:asset/595a855a0b3d852c95deb846a99baaec3ede9b5a.png';
+import researcherImage from '../assets/595a855a0b3d852c95deb846a99baaec3ede9b5a.png';
 
 export function AboutResearcher() {
   return (
@@ -11,7 +10,7 @@ export function AboutResearcher() {
           <div className="grid md:grid-cols-3 gap-8">
             <div className="md:col-span-1">
               <div className="aspect-square rounded-lg overflow-hidden mb-6">
-                <ImageWithFallback
+                <img
                   src={researcherImage}
                   alt="Hilary B Wray"
                   className="w-full h-full object-cover"
@@ -19,14 +18,22 @@ export function AboutResearcher() {
               </div>
               
               <div className="space-y-3">
-                <button className="w-full bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors flex items-center justify-center gap-2">
+                <a
+                  href="mailto:wrayh@uni.coventry.ac.uk"
+                  className="w-full bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors flex items-center justify-center gap-2"
+                >
                   <Mail size={18} />
                   Contact
-                </button>
-                <button className="w-full border-2 border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:border-teal-600 hover:text-teal-600 transition-colors flex items-center justify-center gap-2">
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/hlbrosnihan/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full border-2 border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:border-teal-600 hover:text-teal-600 transition-colors flex items-center justify-center gap-2"
+                >
                   <Linkedin size={18} />
                   LinkedIn
-                </button>
+                </a>
               </div>
             </div>
 
@@ -35,9 +42,15 @@ export function AboutResearcher() {
               <p className="text-teal-600 mb-6">PhD Candidate in Arts and Creative Cultures Research Centre</p>
               
               <div className="prose max-w-none">
-                <p className="text-gray-600 mb-4">I am a dedicated researcher specializing in Polycystic Ovary Syndrome (PCOS), with a focus on understanding the lived experience of this complex condition, as well as, the digital interventions related to self-management with in the NHS.&nbsp;&nbsp;My research aims to bridge the gap between lived experience, user interface design and clinical applications to improve self-management for individuals affected by PCOS. This focus is on preventive care.</p>
+                <p className="text-gray-600 mb-4">I am a dedicated researcher specializing in Polycystic Ovary Syndrome (PCOS), 
+                with a focus on understanding the lived experience of this complex condition, as well as, the digital interventions related 
+                to self-management within the NHS. My research aims to bridge the gap between lived experience, user interface design and 
+                clinical applications to improve self-management for individuals affected by PCOS. This focus is on preventive care.</p>
                 
-                <p className="text-gray-600 mb-4">With a background in Product Design and UX/UI, I employ multidisciplinary approaches&nbsp;&nbsp;to investigate the self-management of PCOS by looking at lived experience and digital usage both in a clinical environment and personal private product experience.&nbsp;&nbsp;&nbsp;My work is driven by the belief that personalized and preventive approaches will be key to addressing the diverse presentations and needs of PCOS patients.</p>
+                <p className="text-gray-600 mb-4">With a background in Product Design and UX/UI, I employ multidisciplinary 
+                approaches to investigate the self-management of PCOS by looking at lived experience and digital usage both 
+                in a clinical environment and personal private product experience. My work is driven by the belief that 
+                personalized and preventive approaches will be key to addressing the diverse presentations and needs of PCOS patients.</p>
               </div>
             </div>
           </div>
@@ -68,7 +81,7 @@ export function AboutResearcher() {
               
               <div>
                 <p className="text-gray-900">BSc in Computer Art and Computer Science</p>
-                <p className="text-gray-600">State University of New York College at Oneonta </p>
+                <p className="text-gray-600">State University of New York College at Oneonta</p>
                 <p className="text-gray-500">2003 - 2006</p>
               </div>
             </div>
@@ -84,21 +97,9 @@ export function AboutResearcher() {
             
             <div className="space-y-4">
               <div>
-                <p className="text-gray-900">Midlands 4 Cities Scholarship </p>
+                <p className="text-gray-900">Midlands 4 Cities Scholarship</p>
                 <p className="text-gray-600">M4C</p>
                 <p className="text-gray-500">2024</p>
-              </div>
-              
-              <div>
-                <p className="text-gray-900">Best Poster Presentation</p>
-                <p className="text-gray-600">Endocrine Conference 2023</p>
-                <p className="text-gray-500">2023</p>
-              </div>
-              
-              <div>
-                <p className="text-gray-900">Graduate Research Fellowship</p>
-                <p className="text-gray-600">National Science Foundation</p>
-                <p className="text-gray-500">2022</p>
               </div>
             </div>
           </div>
@@ -106,7 +107,6 @@ export function AboutResearcher() {
 
         {/* Publications */}
         <div className="bg-white rounded-lg shadow-sm p-6 relative overflow-hidden opacity-60">
-          {/* Coming Soon Banner */}
           <div className="absolute top-6 -right-12 bg-teal-600 text-white px-12 py-1 transform rotate-45 text-sm font-bold shadow-lg">
             COMING SOON
           </div>

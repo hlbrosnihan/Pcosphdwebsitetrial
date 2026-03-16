@@ -51,8 +51,7 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
               <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-white text-center">
                 <h1 className="text-white mb-4">Join Our Research Study</h1>
                 <p className="text-teal-50">
-                  Help advance PCOS research by participating in our study. Your contribution can make a
-                  difference for millions of women worldwide.
+                  Help advance PCOS research by participating in our study. 
                 </p>
               </div>
             </div>
@@ -67,10 +66,10 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
               <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Heart className="text-teal-600" size={28} />
               </div>
-              <h3 className="mb-2">Make a Difference</h3>
+              <h3 className="mb-2">Your Experience Matters</h3>
               <p className="text-gray-600">
-                Your participation directly contributes to advancing scientific understanding of PCOS and
-                developing better treatments.
+              Help highlight the real challenges of living with PCOS. 
+              Your insights shape a more accurate and compassionate understanding of the condition.
               </p>
             </div>
 
@@ -78,10 +77,10 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
               <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <FileText className="text-teal-600" size={28} />
               </div>
-              <h3 className="mb-2">Access to Information</h3>
+              <h3 className="mb-2">Improve Future PCOS Care</h3>
               <p className="text-gray-600">
-                Receive detailed information about your health metrics and stay informed about the latest
-                research findings.
+                By sharing your journey, you contribute directly to designing better 
+                NHS pathways and digital tools that support long-term health and self-management.
               </p>
             </div>
 
@@ -89,9 +88,10 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
               <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="text-teal-600" size={28} />
               </div>
-              <h3 className="mb-2">Expert Care</h3>
+              <h3 className="mb-2">Be Part of Meaningful Change</h3>
               <p className="text-gray-600">
-                Work with experienced researchers and healthcare professionals throughout the study period.
+              Your voice helps build solutions that reflect lived experience not assumptions. 
+              Together, we can create more personalised, effective support for people with PCOS.
               </p>
             </div>
           </div>
@@ -116,12 +116,9 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
                 </li>
                 <li className="flex gap-3">
                   <CheckCircle className="text-teal-600 flex-shrink-0 mt-1" size={18} />
-                  <span>Diagnosed with PCOS according to Rotterdam criteria</span>
+                  <span>Diagnosed with PCOS</span>
                 </li>
-                <li className="flex gap-3">
-                  <CheckCircle className="text-teal-600 flex-shrink-0 mt-1" size={18} />
-                  <span>Willing to attend regular follow-up appointments</span>
-                </li>
+               
                 <li className="flex gap-3">
                   <CheckCircle className="text-teal-600 flex-shrink-0 mt-1" size={18} />
                   <span>Able to provide informed consent</span>
@@ -130,23 +127,19 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
             </div>
 
             <div>
-              <h3 className="mb-3 text-teal-600">Study Commitment</h3>
+              <h3 className="mb-3 text-teal-600">Studies Participation</h3>
               <ul className="space-y-2 text-gray-600">
                 <li className="flex gap-3">
                   <Clock className="text-teal-600 flex-shrink-0 mt-1" size={18} />
-                  <span>Study duration: 12 months</span>
+                  <span>Survey is 20-30 minutes online</span>
                 </li>
                 <li className="flex gap-3">
                   <Clock className="text-teal-600 flex-shrink-0 mt-1" size={18} />
-                  <span>4-6 clinic visits over the study period</span>
+                  <span>Digital Pathway Mapping is a in person workshop</span>
                 </li>
                 <li className="flex gap-3">
                   <Clock className="text-teal-600 flex-shrink-0 mt-1" size={18} />
-                  <span>Regular health assessments and questionnaires</span>
-                </li>
-                <li className="flex gap-3">
-                  <Clock className="text-teal-600 flex-shrink-0 mt-1" size={18} />
-                  <span>Blood samples and basic health measurements</span>
+                  <span>Co-Design experience is a in person workshop</span>
                 </li>
               </ul>
             </div>
@@ -160,24 +153,23 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
             <div className="border-l-4 border-teal-600 pl-6">
               <h3 className="mb-2">Initial Survey</h3>
               <p className="text-gray-600">
-                A preliminary assessment to confirm eligibility and explain the study procedures in detail.
-                You'll have the opportunity to ask questions and review the consent form.
+              You'll complete a short online questionnaire about your PCOS experiences, symptoms, and digital health use.
               </p>
             </div>
 
             <div className="border-l-4 border-teal-600 pl-6">
-              <h3 className="mb-2">Focus Groups & Interviews</h3>
+              <h3 className="mb-2">Digital Pathway Mapping Focus Group</h3>
               <p className="text-gray-600">
-                Comprehensive health evaluation including medical history, physical examination, blood tests,
-                and metabolic assessments to establish your baseline health status.
+              You’ll create a digital visual map of your care journey, showing key moments, 
+              challenges, and interactions with healthcare and apps.
               </p>
             </div>
 
             <div className="border-l-4 border-teal-600 pl-6">
               <h3 className="mb-2">Co-design Workshop</h3>
               <p className="text-gray-600">
-                Final assessment and debriefing session. You'll receive a summary of your results and
-                information about how the data will contribute to research.
+              You'll work collaboratively with others to shape ideas, tools,
+               or features that could improve future PCOS care and digital support.
               </p>
             </div>
           </div>

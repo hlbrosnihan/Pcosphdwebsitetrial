@@ -28,19 +28,40 @@ export function AboutResearch() {
           </div>
         </div>
 
-        {/* Research Overview */}
-        <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-          <h2 className="mb-6">Research Overview</h2>
-          <div className="prose max-w-none">
-            <p className="text-gray-600 mb-4"></p>
-            <p className="text-gray-600 mb-4">
-              Our research employs a multidisciplinary approach, combining molecular biology, clinical studies,
-              and bioinformatics to identify novel biomarkers and therapeutic targets. The ultimate goal is to
-              develop personalized treatment strategies that address the heterogeneous nature of PCOS and improve
-              long-term health outcomes for affected individuals.
-            </p>
-          </div>
-        </div>
+{/* Research Overview */}
+<div className="bg-white rounded-lg shadow-sm p-8 mb-8">
+  <h2 className="mb-6">Research Overview</h2>
+  <div className="prose max-w-none">
+    <p className="text-gray-600 mb-4">
+      My research takes a multidisciplinary approach to understanding PCOS, 
+      bringing together lived experiences, everyday interactions with healthcare, and 
+      the design of digital tools. By exploring how people manage their symptoms, navigate appointments,
+      and use apps or online resources, the project builds a fuller picture of what PCOS care actually looks like 
+      in real life.
+    </p>
+
+    <p className="text-gray-600 mb-4">
+      The aim is to identify what genuinely supports people and where care systems fall short. By analysing these 
+      insights and working directly with patients, the research contributes to developing more personalised and 
+      responsive treatment strategies. Ultimately, the goal is to address the highly varied nature of PCOS and 
+      support better long-term health outcomes for those affected.
+    </p>
+
+    {/* Spacer before second heading */}
+    <div className="mt-10 mb-6">
+      <h2>Research Questions</h2>
+    </div>
+
+    <p className="text-gray-600 mb-4">
+      <strong>RQ1.</strong> How do PCOS users experience and respond to the current UX/UI systems of preventive care applications?
+      <div className="mt-10 mb-6">
+        
+    </div>
+    <strong>RQ2.</strong>  How can co-design approaches address the gaps in
+       digital PCOS intervention, and provide UX/UI guidelines for future FemTech that are more user-informed? 
+    </p>
+  </div>
+</div>
 
         {/* Research Objectives */}
         <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
@@ -62,32 +83,34 @@ export function AboutResearch() {
             <div className="border-l-4 border-teal-600 pl-4">
               <h3 className="mb-2">Objective 1</h3>
               <p className="text-gray-600">
-                Identify and validate novel metabolic biomarkers for early detection and phenotypic
-                classification of PCOS using metabolomics approaches.
+              To review existing systems/tools/apps to inform user discussions and look 
+              at gap areas in more detail.
+             
+                
               </p>
             </div>
             
             <div className="border-l-4 border-teal-600 pl-4">
               <h3 className="mb-2">Objective 2</h3>
               <p className="text-gray-600">
-                Investigate the role of insulin resistance and metabolic dysfunction in the pathogenesis
-                of PCOS across different phenotypic presentations.
+              To better understand patient/user/women's needs and requirements in care and self-management 
+              of PCOS both in the NHS and the wider digital world.
+                
               </p>
             </div>
             
             <div className="border-l-4 border-teal-600 pl-4">
               <h3 className="mb-2">Objective 3</h3>
               <p className="text-gray-600">
-                Examine the genetic and epigenetic factors contributing to PCOS susceptibility and
-                progression using genomic and transcriptomic analyses.
+              To understand the clinical/healthcare professional perspective in the managment of PCOS,
+              the care pathways it takes and the interventions that can be implemented. 
               </p>
             </div>
             
             <div className="border-l-4 border-teal-600 pl-4">
               <h3 className="mb-2">Objective 4</h3>
               <p className="text-gray-600">
-                Evaluate the efficacy of targeted interventions on metabolic and reproductive outcomes
-                in PCOS patients through clinical trials.
+               To develop a co-designed framework with patients and healthcare professional that can solve painpoints in care.
               </p>
             </div>
           </div>
@@ -110,35 +133,46 @@ export function AboutResearch() {
           </div>
           
           <div className={`grid md:grid-cols-2 lg:grid-cols-4 gap-6 ${methodologyExpanded ? 'block' : 'hidden'} md:grid`}>
+          
+            <div className="text-center p-6 bg-gray-50 rounded-lg">
+              <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <User className="text-teal-600" size={24} />
+              </div>
+              <h3 className="mb-2">Autoethnography of PCOS Care Journey</h3>
+              <p className="text-gray-600">
+              This approach uses my personal PCOS journey as data. By reflecting on appointments, symptoms, 
+              and self-management, I explore how PCOS care works in everyday life and where improvements 
+              are needed.
+              </p>
+            </div>
+            
             <div className="text-center p-6 bg-gray-50 rounded-lg">
               <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <FileText className="text-teal-600" size={24} />
               </div>
               <h3 className="mb-2">Digital Survey</h3>
               <p className="text-gray-600">
-                Prospective cohort studies with comprehensive phenotyping of PCOS patients and controls.
+              The survey collects anonymous information from PCOS patients about their 
+              symptoms, appointments, app use, and self-management. 
+              This helps identify common patterns and different needs.
               </p>
             </div>
-            
+
+
+
             <div className="text-center p-6 bg-gray-50 rounded-lg">
               <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Map className="text-teal-600" size={24} />
               </div>
               <h3 className="mb-2">Lived Experience Mapping</h3>
               <p className="text-gray-600">
-                Metabolomics, genomics, and hormonal profiling using advanced analytical techniques.
+              This method helps people map out their PCOS experiences. From symptoms 
+              and appointments to self-care and digital tool use. 
+              The maps reveal patterns that often get lost in standard medical histories.
               </p>
             </div>
             
-            <div className="text-center p-6 bg-gray-50 rounded-lg">
-              <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <User className="text-teal-600" size={24} />
-              </div>
-              <h3 className="mb-2">Clinician Interviews</h3>
-              <p className="text-gray-600">
-                Bioinformatics and statistical modeling to identify patterns and predictive markers.
-              </p>
-            </div>
+        
             
             <div className="text-center p-6 bg-gray-50 rounded-lg">
               <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -146,9 +180,11 @@ export function AboutResearch() {
               </div>
               <h3 className="mb-2">Co-design</h3>
               <p className="text-gray-600">
-                Collaborative design process involving patients, clinicians, and researchers to develop solutions.
+              Patients actively take part in designing features, 
+              pathways, and improvements. This ensures the final outcomes are grounded in lived experience, not assumptions.
               </p>
             </div>
+            
           </div>
         </div>
 
@@ -172,19 +208,23 @@ export function AboutResearch() {
             <ul className={`space-y-3 text-gray-600 ${outcomesExpanded ? 'block' : 'hidden'} md:block`}>
               <li className="flex gap-3">
                 <span className="text-teal-600 mt-1">•</span>
-                <span>Development of a novel biomarker panel for PCOS diagnosis and phenotyping</span>
+                <span>A deeper understanding of real PCOS care journeys, 
+                  including where patients feel supported and where gaps or barriers occur.</span>
               </li>
               <li className="flex gap-3">
                 <span className="text-teal-600 mt-1">•</span>
-                <span>Enhanced understanding of metabolic dysfunction mechanisms in PCOS</span>
+                <span>Insights into how people with PCOS use digital 
+                  tools and apps, and what features or experiences help or hinder their self-management.</span>
               </li>
               <li className="flex gap-3">
                 <span className="text-teal-600 mt-1">•</span>
-                <span>Identification of potential therapeutic targets for personalized treatment</span>
+                <span>Visual maps that show the full picture of lived experience, combining clinical 
+                  appointments, symptoms, emotions, and digital interactions.</span>
               </li>
               <li className="flex gap-3">
                 <span className="text-teal-600 mt-1">•</span>
-                <span>Evidence-based recommendations for clinical management strategies</span>
+                <span>Practical design recommendations, created with patients, for 
+                  improving digital health tools and NHS pathways for PCOS.</span>
               </li>
             </ul>
           </div>
@@ -205,23 +245,24 @@ export function AboutResearch() {
             </div>
             
             <p className={`text-gray-600 mb-4 ${impactExpanded ? 'block' : 'hidden'} md:block`}>
-              This research has the potential to significantly impact the lives of millions of women affected
-              by PCOS worldwide. By advancing our understanding of the condition and developing more precise
-              diagnostic and therapeutic approaches, we aim to:
+            This research helps make the real experiences of people with PCOS visible. By combining personal narratives, 
+            lived experience mapping, and co-designed insights, it highlights what patients actually 
+            need from both digital tools and NHS care. The outcomes have the potential to influence how PCOS support 
+            is designed, delivered, and evaluated. Both in clinical settings and through digital health technologies.
             </p>
             
             <ul className={`space-y-3 text-gray-600 ${impactExpanded ? 'block' : 'hidden'} md:block`}>
               <li className="flex gap-3">
                 <span className="text-teal-600 mt-1">•</span>
-                <span>Reduce diagnostic delays and improve early intervention</span>
+                <span>Improved understanding of patient needs</span>
               </li>
               <li className="flex gap-3">
                 <span className="text-teal-600 mt-1">•</span>
-                <span>Enable personalized treatment strategies</span>
+                <span>Evidence for better digital health design</span>
               </li>
               <li className="flex gap-3">
                 <span className="text-teal-600 mt-1">•</span>
-                <span>Improve long-term metabolic and reproductive health outcomes</span>
+                <span>A mapping model that can inform other long-term conditions</span>
               </li>
             </ul>
           </div>
