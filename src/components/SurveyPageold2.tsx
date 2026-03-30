@@ -2001,27 +2001,31 @@ import {
                     </p>
                     <div className="flex gap-4">
                       {["Yes", "No"].map((option) => (
-                        <button
-                          key={option}
-                          type="button"
-                          onClick={() => {
-                            const val = option.toLowerCase();
-                            setFormData({
-                              ...formData,
-                              usesGames: val,
-                              gameApps: val === "yes" && formData.gameApps.length === 0
-                                ? [{ name: "", rating: "", frequency: "" }]
-                                : formData.gameApps,
-                            });
-                          }}
-                          className={`px-6 py-3 rounded-lg border transition-all ${
-                            formData.usesGames === option.toLowerCase()
-                              ? "bg-teal-600 text-white border-teal-600"
-                              : "border-gray-300 text-gray-700 hover:border-teal-400"
-                          }`}
-                        >
-                          {option}
-                        </button>
+                        <label key={option}>
+                          <input
+                            type="radio"
+                            name="usesGames"
+                            value={option.toLowerCase()}
+                            checked={
+                              formData.usesGames ===
+                              option.toLowerCase()
+                            }
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setFormData({
+                                ...formData,
+                                usesGames: val,
+                                gameApps: val === "yes" && formData.gameApps.length === 0
+                                  ? [{ name: "", rating: "", frequency: "" }]
+                                  : formData.gameApps,
+                              });
+                            }}
+                            className="peer sr-only"
+                          />
+                          <div className="px-6 py-3 border border-gray-300 rounded-lg cursor-pointer transition-all peer-checked:bg-teal-600 peer-checked:text-white peer-checked:border-teal-600 hover:border-teal-400">
+                            {option}
+                          </div>
+                        </label>
                       ))}
                     </div>
                   </div>
@@ -2234,27 +2238,31 @@ import {
                     </label>
                     <div className="flex gap-4">
                       {["Yes", "No"].map((option) => (
-                        <button
-                          key={option}
-                          type="button"
-                          onClick={() => {
-                            const val = option.toLowerCase();
-                            setFormData({
-                              ...formData,
-                              usesWearables: val,
-                              wearableDevices: val === "yes" && formData.wearableDevices.length === 0
-                                ? [{ name: "", brand: "", rating: "" }]
-                                : formData.wearableDevices,
-                            });
-                          }}
-                          className={`px-6 py-3 rounded-lg border transition-all ${
-                            formData.usesWearables === option.toLowerCase()
-                              ? "bg-teal-600 text-white border-teal-600"
-                              : "border-gray-300 text-gray-700 hover:border-teal-400"
-                          }`}
-                        >
-                          {option}
-                        </button>
+                        <label key={option}>
+                          <input
+                            type="radio"
+                            name="usesWearables"
+                            value={option.toLowerCase()}
+                            checked={
+                              formData.usesWearables ===
+                              option.toLowerCase()
+                            }
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setFormData({
+                                ...formData,
+                                usesWearables: val,
+                                wearableDevices: val === "yes" && formData.wearableDevices.length === 0
+                                  ? [{ name: "", brand: "", rating: "" }]
+                                  : formData.wearableDevices,
+                              });
+                            }}
+                            className="peer sr-only"
+                          />
+                          <div className="px-6 py-3 border border-gray-300 rounded-lg cursor-pointer transition-all peer-checked:bg-teal-600 peer-checked:text-white peer-checked:border-teal-600 hover:border-teal-400">
+                            {option}
+                          </div>
+                        </label>
                       ))}
                     </div>
                   </div>
