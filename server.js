@@ -73,11 +73,6 @@ app.get('/submissions', (req, res) => {
 // Serve your built React app from the same server (optional, if you're not using a separate port)
  app.use(express.static(path.join(__dirname, 'build')));
 
-// Catch-all: send all non-API requests to index.html so React Router handles them
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-
 app.listen(PORT, () => {
   console.log(`Survey server running on port ${PORT}`);
   console.log(`Submissions will be saved to: ${SUBMISSIONS_DIR}`);

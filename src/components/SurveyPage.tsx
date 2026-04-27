@@ -23,7 +23,7 @@ import {
   async function submitSurveyData(
     data: Record<string, unknown>,
   ): Promise<{ filename: string }> {
-    const serverResult = await fetch("/submit", {
+    const serverResult = await fetch("/submit.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -423,16 +423,9 @@ import {
             <CheckCircle2 className="text-teal-600 mx-auto mb-6" size={48} />
             <h2 className="text-gray-800 mb-3">Thank You!</h2>
             <p className="text-gray-500 mb-4">
-              Your response has been saved as a JSON file.
+              Your response has been saved.
             </p>
-            <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 text-left">
-              <p className="text-sm text-teal-800 font-medium mb-2">
-                📥 To import into MongoDB:
-              </p>
-              <code className="text-xs text-teal-700 block whitespace-pre">{`mongoimport --db pcosdb \\
-    --collection surveys \\
-    --file submission_XXX.json`}</code>
-            </div>
+            
           </div>
         </div>
       );

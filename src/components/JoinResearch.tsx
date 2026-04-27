@@ -1,12 +1,10 @@
 import { Users, CheckCircle, FileText, Mail, Clock, Heart, ClipboardList } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-interface JoinResearchProps {
-  onNavigate?: (page: string) => void;
-}
-
-export function JoinResearch({ onNavigate }: JoinResearchProps) {
+export function JoinResearch() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -14,12 +12,34 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
     age: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Form submission logic would go here
-    alert('Thank you for your interest! We will contact you soon.');
-    setFormData({ name: '', email: '', phone: '', age: '', message: '' });
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+
+    try {
+      const response = await fetch('/interest.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSubmitStatus('success');
+        setFormData({ name: '', email: '', phone: '', age: '', message: '' });
+      } else {
+        setSubmitStatus('error');
+      }
+    } catch (err) {
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -40,18 +60,16 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
               alt="Research Collaboration"
               className="w-full h-full object-cover"
             />
-            <div 
+            <div
               className="absolute inset-0 flex items-center"
               style={{
-                backgroundImage: `linear-gradient(to right, rgba(17, 94, 89, 0.9), rgba(13, 148, 136, 0.7)), url('https://images.unsplash.com/photo-1610985725707-bb0766bf123b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXJpb2QlMjB0cmFja2luZyUyMGFwcCUyMG1vYmlsZSUyMHBob25lfGVufDF8fHx8MTc3MjQ3MTM3NXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral')`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center'
+                backgroundImage: `linear-gradient(to right, rgba(17, 94, 89, 0.9), rgba(13, 148, 136, 0.7))`,
               }}
             >
               <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-white text-center">
                 <h1 className="text-white mb-4">Join Our Research Study</h1>
                 <p className="text-teal-50">
-                  Help advance PCOS research by participating in our study. 
+                  Help advance PCOS research by participating in our study.
                 </p>
               </div>
             </div>
@@ -68,8 +86,8 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
               </div>
               <h3 className="mb-2">Your Experience Matters</h3>
               <p className="text-gray-600">
-              Help highlight the real challenges of living with PCOS. 
-              Your insights shape a more accurate and compassionate understanding of the condition.
+                Help highlight the real challenges of living with PCOS.
+                Your insights shape a more accurate and compassionate understanding of the condition.
               </p>
             </div>
 
@@ -79,7 +97,7 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
               </div>
               <h3 className="mb-2">Improve Future PCOS Care</h3>
               <p className="text-gray-600">
-                By sharing your journey, you contribute directly to designing better 
+                By sharing your journey, you contribute directly to designing better
                 NHS pathways and digital tools that support long-term health and self-management.
               </p>
             </div>
@@ -90,8 +108,8 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
               </div>
               <h3 className="mb-2">Be Part of Meaningful Change</h3>
               <p className="text-gray-600">
-              Your voice helps build solutions that reflect lived experience not assumptions. 
-              Together, we can create more personalised, effective support for people with PCOS.
+                Your voice helps build solutions that reflect lived experience not assumptions.
+                Together, we can create more personalised, effective support for people with PCOS.
               </p>
             </div>
           </div>
@@ -118,7 +136,6 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
                   <CheckCircle className="text-teal-600 flex-shrink-0 mt-1" size={18} />
                   <span>Diagnosed with PCOS</span>
                 </li>
-               
                 <li className="flex gap-3">
                   <CheckCircle className="text-teal-600 flex-shrink-0 mt-1" size={18} />
                   <span>Able to provide informed consent</span>
@@ -135,11 +152,11 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
                 </li>
                 <li className="flex gap-3">
                   <Clock className="text-teal-600 flex-shrink-0 mt-1" size={18} />
-                  <span>Digital Pathway Mapping is a in person workshop</span>
+                  <span>Digital Pathway Mapping is an in person workshop</span>
                 </li>
                 <li className="flex gap-3">
                   <Clock className="text-teal-600 flex-shrink-0 mt-1" size={18} />
-                  <span>Co-Design experience is a in person workshop</span>
+                  <span>Co-Design experience is an in person workshop</span>
                 </li>
               </ul>
             </div>
@@ -153,30 +170,28 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
             <div className="border-l-4 border-teal-600 pl-6">
               <h3 className="mb-2">Initial Survey</h3>
               <p className="text-gray-600">
-              You'll complete a short online questionnaire about your PCOS experiences, symptoms, and digital health use.
+                You'll complete a short online questionnaire about your PCOS experiences, symptoms, and digital health use.
               </p>
             </div>
-
             <div className="border-l-4 border-teal-600 pl-6">
               <h3 className="mb-2">Digital Pathway Mapping Focus Group</h3>
               <p className="text-gray-600">
-              You’ll create a digital visual map of your care journey, showing key moments, 
-              challenges, and interactions with healthcare and apps.
+                You'll create a digital visual map of your care journey, showing key moments,
+                challenges, and interactions with healthcare and apps.
               </p>
             </div>
-
             <div className="border-l-4 border-teal-600 pl-6">
               <h3 className="mb-2">Co-design Workshop</h3>
               <p className="text-gray-600">
-              You'll work collaboratively with others to shape ideas, tools,
-               or features that could improve future PCOS care and digital support.
+                You'll work collaboratively with others to shape ideas, tools,
+                or features that could improve future PCOS care and digital support.
               </p>
             </div>
           </div>
         </div>
 
         {/* Contact Form */}
-        <div className="bg-white rounded-lg shadow-sm p-8">
+        <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
               <Mail className="text-teal-600" size={20} />
@@ -189,71 +204,91 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
             will contact you within 2-3 business days to discuss the study in more detail.
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="name" className="block mb-2 text-gray-700">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
-                  placeholder="Enter your full name"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block mb-2 text-gray-700">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
-                  placeholder="your.email@example.com"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="message" className="block mb-2 text-gray-700">
-                Additional Information (Optional)
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                value={formData.message}
-                onChange={handleChange}
-                rows={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent resize-none"
-                placeholder="Tell us about your PCOS diagnosis, any questions you have, or other relevant information..."
-              />
-            </div>
-
-            <div className="bg-teal-50 border border-teal-200 rounded-lg p-4">
-              <p className="text-gray-700">
-                <strong>Privacy Notice:</strong> Your information will be kept confidential and used solely for
-                research screening purposes. By submitting this form, you consent to be contacted by our
-                research team.
+          {submitStatus === 'success' ? (
+            <div className="bg-teal-50 border border-teal-200 rounded-lg p-8 text-center">
+              <CheckCircle className="text-teal-600 mx-auto mb-3" size={48} />
+              <h3 className="text-teal-900 mb-2">Thank You for Your Interest!</h3>
+              <p className="text-teal-800">
+                Your expression of interest has been received. We will be in touch within 2-3 business days.
               </p>
             </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="name" className="block mb-2 text-gray-700">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
+                    placeholder="Enter your full name"
+                  />
+                </div>
 
-            <button
-              type="submit"
-              className="w-full md:w-auto bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 transition-colors"
-            >
-              Submit Interest Form
-            </button>
-          </form>
+                <div>
+                  <label htmlFor="email" className="block mb-2 text-gray-700">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
+                    placeholder="your.email@example.com"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="message" className="block mb-2 text-gray-700">
+                  Additional Information (Optional)
+                </label>
+                <textarea
+                  id="message"
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  rows={4}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent resize-none"
+                  placeholder="Tell us about your PCOS diagnosis, any questions you have, or other relevant information..."
+                />
+              </div>
+
+              <div className="bg-teal-50 border border-teal-200 rounded-lg p-4">
+                <p className="text-gray-700">
+                  <strong>Privacy Notice:</strong> Your information will be kept confidential and used solely for
+                  research screening purposes. By submitting this form, you consent to be contacted by our
+                  research team.
+                </p>
+              </div>
+
+              {submitStatus === 'error' && (
+                <p className="text-red-600 text-sm">
+                  Something went wrong. Please try again or email us directly at{' '}
+                  <a href="mailto:wrayh@uni.coventry.ac.uk" className="underline">
+                    wrayh@uni.coventry.ac.uk
+                  </a>.
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full md:w-auto bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Interest Form'}
+              </button>
+            </form>
+          )}
         </div>
 
         {/* Survey Button Section */}
@@ -264,12 +299,12 @@ export function JoinResearch({ onNavigate }: JoinResearchProps) {
             </div>
             <h2 className="mb-4">Already Interested? Take Our Survey</h2>
             <p className="text-gray-700 mb-6">
-              If you've already expressed interest or want to contribute to our research immediately, 
-              you can complete our comprehensive PCOS survey. This survey helps us gather valuable 
+              If you've already expressed interest or want to contribute to our research immediately,
+              you can complete our comprehensive PCOS survey. This survey helps us gather valuable
               data about PCOS experiences and takes approximately 15-20 minutes to complete.
             </p>
             <button
-              onClick={() => onNavigate?.('survey')}
+              onClick={() => navigate('/survey')}
               className="bg-teal-600 text-white px-8 py-4 rounded-lg hover:bg-teal-700 transition-colors inline-flex items-center gap-2"
             >
               <ClipboardList size={20} />
