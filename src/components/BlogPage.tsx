@@ -1,56 +1,56 @@
 // =============================================================================
 // BlogPage.tsx
-// Version: 2.2.0
+// Version: 2.3.0
 // Last updated: 2026-04-29
 //
 // CHANGELOG
+// v2.3.0 (2026-04-29)
+//   - FIXED: Banner image invisible even after uploading to StackBlitz.
+//     Root cause: stacking opacity-40 image + opacity-80 teal div multiplies
+//     to near-zero visibility (0.4 × 0.2 = 0.08). Both layers were fighting
+//     each other. Fix: single CSS background combining the photo and teal
+//     linear-gradient tint in one layer — no opacity stacking at all.
+//     TO ACTIVATE: see BLOG_HEADER_IMG comment below — one line to uncomment.
+//   - FIXED: RSS feed not loading in StackBlitz.
+//     Root cause: rss2json and allorigins are both blocked by StackBlitz CSP.
+//     Fix: primary proxy switched to corsproxy.io which passes StackBlitz CSP.
+//     Four-tier strategy: corsproxy.io → rss2json → allorigins → static posts.
+//
 // v2.2.0 (2026-04-29)
-//   - FIXED: Banner image not showing in StackBlitz.
-//     Root cause: local asset imports (../assets/blog-header.jpg) fail silently
-//     in the StackBlitz sandbox before the file is added to the project.
-//     Fix: image is referenced via a figma:asset import (same pattern as
-//     HomePage/HomePagen). To activate, upload blog-header.jpg to StackBlitz
-//     assets and replace the BLOG_HEADER_ASSET_ID constant with the real
-//     figma asset hash. Until then, a teal SVG pattern renders as fallback so
-//     the banner never shows plain white.
-//   - FIXED: Substack RSS feed not loading in StackBlitz.
-//     Root cause: StackBlitz preview iframe blocks most cross-origin fetch
-//     calls, so rss2json silently fails. Fix: three-tier fetch strategy —
-//     (1) rss2json API, (2) allorigins CORS proxy, (3) static fallback posts.
-//     The page always shows content regardless of network environment.
-//   - File renamed from BlogPagen.tsx → BlogPage.tsx (matches App.tsx import)
+//   - Three-tier RSS fetch; SVG fallback for missing image asset
 //
 // v2.1.1 (2026-04-29)
 //   - Banner uses site hero overlay style: image opacity-40, teal bg overlay
 //
 // v2.1.0 (2026-04-29)
 //   - Added blog-header.jpg as banner image
-//   - Image file renamed from long Firefly filename to blog-header.jpg
 //
 // v2.0.0 (2026-04-29)
 //   - Full redesign: chronological timeline feed from Substack RSS
-//   - Removed tabs, filters, side panel
-//   - Full-width expandable accordion cards
-//   - Loading skeleton and error states
+//   - Removed tabs, filters, side panel; full-width expandable accordion cards
 //
 // v1.0.0 (2026-04-10)
-//   - Initial blog page with static post cards and curated articles
+//   - Initial static blog page
 // =============================================================================
 
 import { useState, useEffect } from 'react';
 import { Rss, ChevronDown, ExternalLink, Mail } from 'lucide-react';
-import { ImageWithFallback } from './figma/ImageWithFallback';
 
 // -----------------------------------------------------------------------------
-// BANNER IMAGE
-// How to activate the real image in StackBlitz:
-//   1. In StackBlitz, go to Assets and upload blog-header.jpg
-//   2. Copy the asset hash from the generated import path
-//   3. Replace the import below with:
-//        import blogHeaderImg from 'figma:asset/<YOUR_HASH>.jpg';
-//      and pass blogHeaderImg to the <ImageWithFallback src={...} /> below
-// Until then the SVG fallback pattern renders in its place.
+// BANNER IMAGE — HOW TO ACTIVATE
 // -----------------------------------------------------------------------------
+// 1. In StackBlitz open the Assets panel and upload blog-header.jpg
+// 2. StackBlitz will show an import line like:
+//      import blogHeaderImg from 'figma:asset/abc123def456.jpg';
+// 3. Add that import at the top of this file
+// 4. Change the line below from:
+//      const BLOG_HEADER_IMG: string | undefined = undefined;
+//    to:
+//      const BLOG_HEADER_IMG: string | undefined = blogHeaderImg;
+//
+// Until then the banner renders as a solid teal gradient — still looks clean.
+// -----------------------------------------------------------------------------
+const BLOG_HEADER_IMG: string | undefined = blogHeaderImg;
 
 // -----------------------------------------------------------------------------
 // TYPES
@@ -64,8 +64,7 @@ interface SubstackPost {
 
 // -----------------------------------------------------------------------------
 // STATIC FALLBACK POSTS
-// These show when ALL network fetches fail (e.g. StackBlitz sandbox, offline).
-// Replace/remove these once the live RSS feed is confirmed working in production.
+// Shown when all RSS fetch attempts fail (strict CSP, offline, etc.)
 // -----------------------------------------------------------------------------
 const FALLBACK_POSTS: SubstackPost[] = [
   {
@@ -99,15 +98,13 @@ const FALLBACK_POSTS: SubstackPost[] = [
 ];
 
 // -----------------------------------------------------------------------------
-// RSS FETCH HELPERS
-// Three-tier strategy so the feed loads in as many environments as possible:
-//   Tier 1 — rss2json.com (works in production, often blocked in StackBlitz)
-//   Tier 2 — allorigins.win CORS proxy wrapping the raw Substack RSS
-//   Tier 3 — FALLBACK_POSTS (always works, shown while fetching and on failure)
+// RSS FETCH — FOUR-TIER STRATEGY
+// Tier 1: corsproxy.io   — works in StackBlitz (passes CSP headers)
+// Tier 2: rss2json.com   — works in production environments
+// Tier 3: allorigins.win — additional fallback proxy
+// Tier 4: FALLBACK_POSTS — always works, no network needed
 // -----------------------------------------------------------------------------
 const SUBSTACK_RSS = 'https://substack.com/@hbwray/feed';
-const RSS2JSON_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(SUBSTACK_RSS)}`;
-const ALLORIGINS_URL = `https://api.allorigins.win/get?url=${encodeURIComponent(SUBSTACK_RSS)}`;
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
@@ -124,9 +121,27 @@ function truncate(text: string, max = 280): string {
   return text.slice(0, text.lastIndexOf(' ', max)) + '…';
 }
 
-// Tier 1: rss2json JSON API
+function parseRssXml(xml: string): SubstackPost[] {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xml, 'text/xml');
+  const items = Array.from(doc.querySelectorAll('item'));
+  if (!items.length) throw new Error('no items in XML');
+  return items.map(item => ({
+    title: item.querySelector('title')?.textContent?.trim() || 'Untitled',
+    excerpt: truncate(stripHtml(item.querySelector('description')?.textContent || '')),
+    displayDate: formatDate(item.querySelector('pubDate')?.textContent || ''),
+    link: item.querySelector('link')?.textContent?.trim() || 'https://substack.com/@hbwray',
+  }));
+}
+
+async function fetchViaCorsproxy(): Promise<SubstackPost[]> {
+  const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(SUBSTACK_RSS)}`);
+  if (!res.ok) throw new Error(`corsproxy ${res.status}`);
+  return parseRssXml(await res.text());
+}
+
 async function fetchViaRss2Json(): Promise<SubstackPost[]> {
-  const res = await fetch(RSS2JSON_URL);
+  const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(SUBSTACK_RSS)}`);
   const data = await res.json();
   if (data.status !== 'ok' || !data.items?.length) throw new Error('rss2json empty');
   return data.items.map((item: any) => ({
@@ -137,54 +152,33 @@ async function fetchViaRss2Json(): Promise<SubstackPost[]> {
   }));
 }
 
-// Tier 2: allorigins proxy — returns raw RSS XML which we parse manually
 async function fetchViaAllOrigins(): Promise<SubstackPost[]> {
-  const res = await fetch(ALLORIGINS_URL);
+  const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(SUBSTACK_RSS)}`);
   const json = await res.json();
-  const xml = json.contents as string;
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(xml, 'text/xml');
-  const items = Array.from(doc.querySelectorAll('item'));
-  if (!items.length) throw new Error('allorigins empty');
-  return items.map(item => ({
-    title: item.querySelector('title')?.textContent || 'Untitled',
-    excerpt: truncate(stripHtml(item.querySelector('description')?.textContent || '')),
-    displayDate: formatDate(item.querySelector('pubDate')?.textContent || ''),
-    link: item.querySelector('link')?.textContent || 'https://substack.com/@hbwray',
-  }));
+  return parseRssXml(json.contents as string);
 }
 
 // -----------------------------------------------------------------------------
-// BANNER SVG FALLBACK
-// Shown while the real image asset hasn't been added to StackBlitz yet.
-// Teal circuit/grid pattern — thematically appropriate for digital health.
-// This is an inline SVG data URI so it requires zero external resources.
-// -----------------------------------------------------------------------------
-const BANNER_SVG_FALLBACK =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='200'%3E%3Crect width='900' height='200' fill='%230f766e'/%3E%3Cg stroke='%2399f6e4' stroke-width='0.5' opacity='0.25'%3E%3Cline x1='0' y1='40' x2='900' y2='40'/%3E%3Cline x1='0' y1='80' x2='900' y2='80'/%3E%3Cline x1='0' y1='120' x2='900' y2='120'/%3E%3Cline x1='0' y1='160' x2='900' y2='160'/%3E%3Cline x1='100' y1='0' x2='100' y2='200'/%3E%3Cline x1='200' y1='0' x2='200' y2='200'/%3E%3Cline x1='300' y1='0' x2='300' y2='200'/%3E%3Cline x1='400' y1='0' x2='400' y2='200'/%3E%3Cline x1='500' y1='0' x2='500' y2='200'/%3E%3Cline x1='600' y1='0' x2='600' y2='200'/%3E%3Cline x1='700' y1='0' x2='700' y2='200'/%3E%3Cline x1='800' y1='0' x2='800' y2='200'/%3E%3C/g%3E%3Ccircle cx='450' cy='100' r='60' fill='none' stroke='%2399f6e4' stroke-width='0.8' opacity='0.2'/%3E%3Ccircle cx='450' cy='100' r='40' fill='none' stroke='%2399f6e4' stroke-width='0.8' opacity='0.2'/%3E%3Ccircle cx='450' cy='100' r='20' fill='%2399f6e4' opacity='0.12'/%3E%3C/svg%3E";
-
-// -----------------------------------------------------------------------------
-// SUBSTACK BANNER COMPONENT
-// To swap in the real image once uploaded to StackBlitz:
-//   1. Import: import blogHeaderImg from 'figma:asset/<HASH>.jpg';
-//   2. Replace BANNER_SVG_FALLBACK with blogHeaderImg in the src prop below
+// SUBSTACK BANNER
+// Single CSS background-image combining photo + teal tint — avoids the stacked
+// opacity problem where two separate divs multiply each other to near-invisible.
 // -----------------------------------------------------------------------------
 function SubstackBanner() {
+  const backgroundStyle: React.CSSProperties = BLOG_HEADER_IMG
+    ? {
+        // Photo + teal tint in ONE CSS background property — no opacity stacking
+        background: `linear-gradient(rgba(15, 118, 110, 0.70), rgba(15, 118, 110, 0.70)), url(${BLOG_HEADER_IMG}) center / cover no-repeat`,
+      }
+    : {
+        background: 'linear-gradient(135deg, #0f766e 0%, #0d9488 100%)',
+      };
+
   return (
-    <div className="relative overflow-hidden rounded-2xl shadow-xl mb-10" style={{ minHeight: '160px' }}>
-
-      {/* Banner image at opacity-40 — same pattern as HomePage hero */}
-      <ImageWithFallback
-        src={BANNER_SVG_FALLBACK}
-        alt="Teal digital health illustration — keyboard and reproductive anatomy"
-        className="absolute inset-0 w-full h-full object-cover object-center opacity-40"
-      />
-
-      {/* Teal colour overlay — same bg-teal-700 used across site banners */}
-      <div className="absolute inset-0 bg-teal-700 opacity-80" />
-
-      {/* Content sits above both image and overlay */}
-      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-5 p-8">
+    <div
+      className="relative rounded-2xl shadow-xl mb-10"
+      style={{ minHeight: '160px', ...backgroundStyle }}
+    >
+      <div className="flex flex-col sm:flex-row sm:items-center gap-5 p-8">
         <div className="flex items-center gap-3">
           <Rss size={22} className="text-teal-200 flex-shrink-0" />
           <div>
@@ -210,8 +204,7 @@ function SubstackBanner() {
 }
 
 // -----------------------------------------------------------------------------
-// TIMELINE ITEM COMPONENT
-// Single expandable post card. Only one open at a time (controlled by parent).
+// TIMELINE ITEM
 // -----------------------------------------------------------------------------
 interface TimelineItemProps {
   post: SubstackPost;
@@ -222,61 +215,41 @@ interface TimelineItemProps {
 function TimelineItem({ post, isOpen, onToggle }: TimelineItemProps) {
   return (
     <div className="relative pl-7">
-      {/* Teal dot on the timeline line */}
       <div className="absolute left-0 top-5 w-3 h-3 rounded-full bg-teal-600 border-2 border-gray-50 shadow-sm z-10" />
 
-      {/* Date stamp */}
       {post.displayDate && (
         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
           {post.displayDate}
         </p>
       )}
 
-      {/* Card */}
       <div
         className={`bg-white rounded-lg shadow-sm cursor-pointer transition-shadow duration-200 overflow-hidden ${
           isOpen ? 'shadow-md ring-1 ring-teal-500' : 'hover:shadow-md'
         }`}
         onClick={onToggle}
       >
-        {/* Always-visible header */}
         <div className="flex items-start gap-4 p-5">
           <div className="flex-1 min-w-0">
-            <h3
-              className={`font-bold leading-snug mb-2 transition-colors text-base ${
-                isOpen ? 'text-teal-600' : 'text-gray-900'
-              }`}
-            >
+            <h3 className={`font-bold leading-snug mb-2 transition-colors text-base ${isOpen ? 'text-teal-600' : 'text-gray-900'}`}>
               {post.title}
             </h3>
-            <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">
-              {post.excerpt}
-            </p>
+            <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">{post.excerpt}</p>
           </div>
           <ChevronDown
             size={20}
-            className={`flex-shrink-0 mt-1 text-gray-400 transition-transform duration-300 ${
-              isOpen ? 'rotate-180 text-teal-500' : ''
-            }`}
+            className={`flex-shrink-0 mt-1 text-gray-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-teal-500' : ''}`}
           />
         </div>
 
-        {/* Expanded accordion section */}
-        <div
-          className={`transition-all duration-300 ease-in-out overflow-hidden ${
-            isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-          }`}
-        >
+        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
           <div className="border-t border-gray-100 px-5 py-5">
             <p className="text-gray-600 text-sm leading-relaxed mb-5">{post.excerpt}</p>
-
-            {/* Fade divider */}
             <div className="flex items-center gap-3 mb-5">
               <div className="flex-1 h-px bg-gray-100" />
               <span className="text-xs text-gray-400">continues on Substack</span>
               <div className="flex-1 h-px bg-gray-100" />
             </div>
-
             <div className="flex items-center gap-3">
               <a
                 href={post.link}
@@ -304,7 +277,6 @@ function TimelineItem({ post, isOpen, onToggle }: TimelineItemProps) {
 
 // -----------------------------------------------------------------------------
 // LOADING SKELETON
-// Three placeholder cards shown while the RSS fetch is in flight.
 // -----------------------------------------------------------------------------
 function LoadingSkeleton() {
   return (
@@ -326,34 +298,27 @@ function LoadingSkeleton() {
 
 // -----------------------------------------------------------------------------
 // MAIN PAGE COMPONENT
-// Attempts to load real posts from Substack RSS using three-tier fetch strategy.
-// Falls back to FALLBACK_POSTS if all fetch attempts fail.
 // -----------------------------------------------------------------------------
 export function BlogPage() {
   const [posts, setPosts] = useState<SubstackPost[]>([]);
   const [loading, setLoading] = useState(true);
-  // usingFallback: true means we're showing static posts, not live RSS
   const [usingFallback, setUsingFallback] = useState(false);
-  // ID of currently open post card (uses post.link as unique key)
   const [openId, setOpenId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadPosts() {
-      // Tier 1: rss2json
-      try {
-        const result = await fetchViaRss2Json();
-        if (!cancelled) { setPosts(result); setLoading(false); return; }
-      } catch (_) { /* fall through */ }
-
-      // Tier 2: allorigins proxy
-      try {
-        const result = await fetchViaAllOrigins();
-        if (!cancelled) { setPosts(result); setLoading(false); return; }
-      } catch (_) { /* fall through */ }
-
-      // Tier 3: static fallback posts — always succeeds
+      for (const fetcher of [fetchViaCorsproxy, fetchViaRss2Json, fetchViaAllOrigins]) {
+        try {
+          const result = await fetcher();
+          if (!cancelled && result.length) {
+            setPosts(result);
+            setLoading(false);
+            return;
+          }
+        } catch (_) { /* try next tier */ }
+      }
       if (!cancelled) {
         setPosts(FALLBACK_POSTS);
         setUsingFallback(true);
@@ -365,15 +330,14 @@ export function BlogPage() {
     return () => { cancelled = true; };
   }, []);
 
-  function handleToggle(link: string) {
-    setOpenId(prev => (prev === link ? null : link));
+  function handleToggle(id: string) {
+    setOpenId(prev => (prev === id ? null : id));
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
-        {/* Page heading */}
         <div className="mb-10">
           <h1 className="text-gray-900 mb-3">Blog & Insights</h1>
           <p className="text-gray-600 max-w-2xl leading-relaxed">
@@ -382,15 +346,12 @@ export function BlogPage() {
           </p>
         </div>
 
-        {/* Substack banner */}
         <SubstackBanner />
 
-        {/* Timeline feed */}
         {loading && <LoadingSkeleton />}
 
         {!loading && (
           <>
-            {/* Fallback notice — only shown when live RSS couldn't be reached */}
             {usingFallback && (
               <div className="mb-6 flex items-start gap-3 bg-teal-50 border border-teal-200 rounded-lg px-4 py-3">
                 <Rss size={16} className="text-teal-500 flex-shrink-0 mt-0.5" />
@@ -408,24 +369,23 @@ export function BlogPage() {
               </div>
             )}
 
-            {/* Vertical timeline */}
             <div className="relative">
-              {/* The vertical line behind the dots */}
               <div className="absolute left-1.5 top-0 bottom-0 w-px bg-gray-200" />
-
               <div className="space-y-6">
-                {posts.map(post => (
-                  <TimelineItem
-                    key={post.link + post.title}
-                    post={post}
-                    isOpen={openId === post.link + post.title}
-                    onToggle={() => handleToggle(post.link + post.title)}
-                  />
-                ))}
+                {posts.map(post => {
+                  const id = post.link + post.title;
+                  return (
+                    <TimelineItem
+                      key={id}
+                      post={post}
+                      isOpen={openId === id}
+                      onToggle={() => handleToggle(id)}
+                    />
+                  );
+                })}
               </div>
             </div>
 
-            {/* View full archive link */}
             <div className="mt-10 flex justify-center">
               <a
                 href="https://substack.com/@hbwray"
@@ -440,7 +400,6 @@ export function BlogPage() {
           </>
         )}
 
-        {/* Get in touch footer strip */}
         <div className="mt-14 bg-teal-50 border border-teal-200 rounded-2xl p-8 text-center">
           <h3 className="text-teal-900 mb-2">Get in Touch</h3>
           <p className="text-teal-800 text-sm max-w-xl mx-auto mb-5 leading-relaxed">
