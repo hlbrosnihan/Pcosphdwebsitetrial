@@ -16,11 +16,6 @@
 //                 → "Digital Pathway Mapping — in-person workshop using digital tools"
 //               - "Co-Design experience is an in person workshop"
 //                 → "Co-Design Workshop — in-person session"
-//
-// v3 — 2026-04-27
-//      MOVED:   "Already Interested? Take Our Survey" section
-//               — was below Express Your Interest form
-//               — now sits above Express Your Interest form
 // =============================================================
 
 import { Users, CheckCircle, FileText, Mail, Clock, Heart, ClipboardList } from 'lucide-react';
@@ -77,7 +72,6 @@ export function JoinResearch() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-
         {/* Hero Section */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
           <div className="relative h-64 md:h-80">
@@ -141,7 +135,7 @@ export function JoinResearch() {
           </div>
         </div>
 
-        {/* Eligibility Criteria */}
+        {/* Eligibility Criteria — v2 changes are in this section */}
         <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
@@ -151,6 +145,7 @@ export function JoinResearch() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
+            {/* v2: removed gender restriction + age upper limit; added UK criterion */}
             <div>
               <h3 className="mb-3 text-teal-600">Inclusion Criteria</h3>
               <ul className="space-y-2 text-gray-600">
@@ -173,6 +168,7 @@ export function JoinResearch() {
               </ul>
             </div>
 
+            {/* v2: studies wording updated for clarity */}
             <div>
               <h3 className="mb-3 text-teal-600">Studies Participation</h3>
               <ul className="space-y-2 text-gray-600">
@@ -220,29 +216,7 @@ export function JoinResearch() {
           </div>
         </div>
 
-        {/* v3: Survey Button Section — MOVED above Express Your Interest */}
-        <div className="bg-gradient-to-r from-teal-50 to-teal-100 rounded-lg shadow-sm p-8 border-2 border-teal-200 mb-8">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="w-16 h-16 bg-teal-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <ClipboardList className="text-white" size={32} />
-            </div>
-            <h2 className="mb-4">Already Interested? Take Our Survey</h2>
-            <p className="text-gray-700 mb-6">
-              If you've already expressed interest or want to contribute to our research immediately,
-              you can complete our comprehensive PCOS survey. This survey helps us gather valuable
-              data about PCOS experiences and takes approximately 15-20 minutes to complete.
-            </p>
-            <button
-              onClick={() => navigate('/survey')}
-              className="bg-teal-600 text-white px-8 py-4 rounded-lg hover:bg-teal-700 transition-colors inline-flex items-center gap-2"
-            >
-              <ClipboardList size={20} />
-              Participate in Our Survey
-            </button>
-          </div>
-        </div>
-
-        {/* Express Your Interest Form — now sits below the survey link */}
+        {/* Contact Form */}
         <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
@@ -343,6 +317,27 @@ export function JoinResearch() {
           )}
         </div>
 
+        {/* Survey Button Section */}
+        <div className="bg-gradient-to-r from-teal-50 to-teal-100 rounded-lg shadow-sm p-8 border-2 border-teal-200">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="w-16 h-16 bg-teal-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <ClipboardList className="text-white" size={32} />
+            </div>
+            <h2 className="mb-4">Already Interested? Take Our Survey</h2>
+            <p className="text-gray-700 mb-6">
+              If you've already expressed interest or want to contribute to our research immediately,
+              you can complete our comprehensive PCOS survey. This survey helps us gather valuable
+              data about PCOS experiences and takes approximately 15-20 minutes to complete.
+            </p>
+            <button
+              onClick={() => navigate('/survey')}
+              className="bg-teal-600 text-white px-8 py-4 rounded-lg hover:bg-teal-700 transition-colors inline-flex items-center gap-2"
+            >
+              <ClipboardList size={20} />
+              Participate in Our Survey
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

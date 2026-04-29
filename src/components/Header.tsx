@@ -9,6 +9,7 @@ export function Header() {
     { path: '/', label: 'Home' },
     { path: '/researcher', label: 'About Researcher' },
     { path: '/research', label: 'About Research' },
+    { path: '/blog', label: 'Blog' },
   ];
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
