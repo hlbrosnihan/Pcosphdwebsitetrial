@@ -1,23 +1,18 @@
 // =============================================================================
 // BlogPage.tsx
-// Version: 2.4.7
+// Version: 2.4.8
 // Last updated: 2026-04-29
 //
 // CHANGELOG
-// v2.4.7 (2026-04-29)
-//   - FIXED: Collapse button definitively fixed.
-//     Root cause identified: header div and expandable div were siblings
-//     inside the card wrapper — stopPropagation on the expandable div only
-//     stops bubbling UP through its own ancestors, not across to the sibling
-//     header div. The header was never in the event path of the expandable
-//     section, so stopPropagation there had no effect.
-//     Fix: onClick={onToggle} moved to the outer card wrapper div (parent of
-//     both header and body). Collapse button calls e.stopPropagation() which
-//     now correctly prevents the event reaching the card wrapper's onToggle,
-//     then calls onClose() directly. This is the correct DOM event model.
+// v2.4.8 (2026-04-29)
+//   - FIXED: Expand/collapse not working in StackBlitz with fallback data.
+//     Root cause: max-h-[500px] is a Tailwind arbitrary value — not generated
+//     by JIT in StackBlitz with Tailwind v4, so div stayed at max-h-0.
+//     Fix: replaced with inline style={{ maxHeight, overflow, transition }}
+//     which bypasses Tailwind JIT entirely, works in all environments.
 //
-// v2.4.6 (2026-04-29)
-//   - Collapsed card shows only date + title
+// v2.4.7 (2026-04-29)
+//   - Collapsed card shows title bar only; all content in animated section
 //     * Outer container: max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12
 //     * Hero banner: bg-white rounded-lg shadow-sm overflow-hidden mb-8
 //       with relative h-48 md:h-64 image + bg-gradient-to-r teal overlay
@@ -214,12 +209,11 @@ function TimelineItem({ post, isOpen, onToggle, onClose }: TimelineItemProps) {
         </div>
 
         {/* Everything below the title animates in/out.
-            stopPropagation on this wrapper prevents any click inside
-            (excerpt, buttons, links) from bubbling to the title bar's onToggle */}
+            Using inline style for max-height instead of Tailwind arbitrary
+            value — avoids JIT compilation issues in StackBlitz with Tailwind v4.
+            stopPropagation prevents clicks inside expanding to bubble to title bar */}
         <div
-          className={`overflow-hidden transition-all duration-300 ease-in-out ${
-            isOpen ? 'max-h-[500px]' : 'max-h-0'
-          }`}
+          style={{ maxHeight: isOpen ? '500px' : '0px', overflow: 'hidden', transition: 'max-height 0.3s ease-in-out' }}
           onClick={e => e.stopPropagation()}
         >
           <div className="border-t border-gray-200 px-5 py-5">
