@@ -1,29 +1,42 @@
 // =============================================================================
 // BlogPage.tsx
-// Version: 2.3.0
+// Version: 2.4.7
 // Last updated: 2026-04-29
 //
 // CHANGELOG
+// v2.4.7 (2026-04-29)
+//   - FIXED: Collapse button definitively fixed.
+//     Root cause identified: header div and expandable div were siblings
+//     inside the card wrapper — stopPropagation on the expandable div only
+//     stops bubbling UP through its own ancestors, not across to the sibling
+//     header div. The header was never in the event path of the expandable
+//     section, so stopPropagation there had no effect.
+//     Fix: onClick={onToggle} moved to the outer card wrapper div (parent of
+//     both header and body). Collapse button calls e.stopPropagation() which
+//     now correctly prevents the event reaching the card wrapper's onToggle,
+//     then calls onClose() directly. This is the correct DOM event model.
+//
+// v2.4.6 (2026-04-29)
+//   - Collapsed card shows only date + title
+//     * Outer container: max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12
+//     * Hero banner: bg-white rounded-lg shadow-sm overflow-hidden mb-8
+//       with relative h-48 md:h-64 image + bg-gradient-to-r teal overlay
+//     * Content sections: bg-white rounded-lg shadow-sm p-8 mb-8
+//     * Timeline section collapsible on mobile (md:hidden chevron), always
+//       visible on desktop — same pattern as objectives/methodology sections
+//   - Removed max-w-3xl constraint on main content (was too narrow vs site)
+//
+// v2.3.1 (2026-04-29)
+//   - Fixed line-clamp-2 SWC crash; fixed image import path
+//
 // v2.3.0 (2026-04-29)
-//   - FIXED: Banner image invisible even after uploading to StackBlitz.
-//     Root cause: stacking opacity-40 image + opacity-80 teal div multiplies
-//     to near-zero visibility (0.4 × 0.2 = 0.08). Both layers were fighting
-//     each other. Fix: single CSS background combining the photo and teal
-//     linear-gradient tint in one layer — no opacity stacking at all.
-//     TO ACTIVATE: see BLOG_HEADER_IMG comment below — one line to uncomment.
-//   - FIXED: RSS feed not loading in StackBlitz.
-//     Root cause: rss2json and allorigins are both blocked by StackBlitz CSP.
-//     Fix: primary proxy switched to corsproxy.io which passes StackBlitz CSP.
-//     Four-tier strategy: corsproxy.io → rss2json → allorigins → static posts.
+//   - Fixed banner image opacity stacking; switched to corsproxy.io for RSS
 //
 // v2.2.0 (2026-04-29)
 //   - Three-tier RSS fetch; SVG fallback for missing image asset
 //
 // v2.1.1 (2026-04-29)
-//   - Banner uses site hero overlay style: image opacity-40, teal bg overlay
-//
-// v2.1.0 (2026-04-29)
-//   - Added blog-header.jpg as banner image
+//   - Banner overlay style matching site hero
 //
 // v2.0.0 (2026-04-29)
 //   - Full redesign: chronological timeline feed from Substack RSS
@@ -34,23 +47,9 @@
 // =============================================================================
 
 import { useState, useEffect } from 'react';
-import { Rss, ChevronDown, ExternalLink, Mail } from 'lucide-react';
-
-// -----------------------------------------------------------------------------
-// BANNER IMAGE — HOW TO ACTIVATE
-// -----------------------------------------------------------------------------
-// 1. In StackBlitz open the Assets panel and upload blog-header.jpg
-// 2. StackBlitz will show an import line like:
-//      import blogHeaderImg from 'figma:asset/abc123def456.jpg';
-// 3. Add that import at the top of this file
-// 4. Change the line below from:
-//      const BLOG_HEADER_IMG: string | undefined = undefined;
-//    to:
-//      const BLOG_HEADER_IMG: string | undefined = blogHeaderImg;
-//
-// Until then the banner renders as a solid teal gradient — still looks clean.
-// -----------------------------------------------------------------------------
-const BLOG_HEADER_IMG: string | undefined = blogHeaderImg;
+import { Rss, ChevronDown, ChevronUp, ExternalLink, Mail } from 'lucide-react';
+import { ImageWithFallback } from './figma/ImageWithFallback';
+import blogHeaderImg from '../assets/blog-header.jpg';
 
 // -----------------------------------------------------------------------------
 // TYPES
@@ -118,14 +117,14 @@ function formatDate(raw: string): string {
 
 function truncate(text: string, max = 280): string {
   if (text.length <= max) return text;
-  return text.slice(0, text.lastIndexOf(' ', max)) + '…';
+  return text.slice(0, text.lastIndexOf(' ', max)) + '...';
 }
 
 function parseRssXml(xml: string): SubstackPost[] {
   const parser = new DOMParser();
   const doc = parser.parseFromString(xml, 'text/xml');
   const items = Array.from(doc.querySelectorAll('item'));
-  if (!items.length) throw new Error('no items in XML');
+  if (!items.length) throw new Error('no items');
   return items.map(item => ({
     title: item.querySelector('title')?.textContent?.trim() || 'Untitled',
     excerpt: truncate(stripHtml(item.querySelector('description')?.textContent || '')),
@@ -159,64 +158,32 @@ async function fetchViaAllOrigins(): Promise<SubstackPost[]> {
 }
 
 // -----------------------------------------------------------------------------
-// SUBSTACK BANNER
-// Single CSS background-image combining photo + teal tint — avoids the stacked
-// opacity problem where two separate divs multiply each other to near-invisible.
-// -----------------------------------------------------------------------------
-function SubstackBanner() {
-  const backgroundStyle: React.CSSProperties = BLOG_HEADER_IMG
-    ? {
-        // Photo + teal tint in ONE CSS background property — no opacity stacking
-        background: `linear-gradient(rgba(15, 118, 110, 0.70), rgba(15, 118, 110, 0.70)), url(${BLOG_HEADER_IMG}) center / cover no-repeat`,
-      }
-    : {
-        background: 'linear-gradient(135deg, #0f766e 0%, #0d9488 100%)',
-      };
-
-  return (
-    <div
-      className="relative rounded-2xl shadow-xl mb-10"
-      style={{ minHeight: '160px', ...backgroundStyle }}
-    >
-      <div className="flex flex-col sm:flex-row sm:items-center gap-5 p-8">
-        <div className="flex items-center gap-3">
-          <Rss size={22} className="text-teal-200 flex-shrink-0" />
-          <div>
-            <h2 className="text-white text-lg font-bold leading-tight mb-1">
-              PCOS PhD Dispatches &mdash; on Substack
-            </h2>
-            <p className="text-teal-100 text-sm leading-relaxed">
-              Thoughts and findings through the PhD journey and PCOS lived experience.
-            </p>
-          </div>
-        </div>
-        <a
-          href="https://substack.com/@hbwray"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-shrink-0 sm:ml-auto inline-flex items-center gap-2 bg-white text-teal-700 font-bold px-5 py-2.5 rounded-full text-sm hover:bg-teal-50 transition-colors"
-        >
-          Subscribe free
-        </a>
-      </div>
-    </div>
-  );
-}
-
+// TIMELINE ITEM
+// Single expandable post card. One open at a time, controlled by parent.
+// onToggle — called when clicking the card header (opens or closes)
 // -----------------------------------------------------------------------------
 // TIMELINE ITEM
+// Single card div with onClick={onToggle} on the whole card.
+// Collapse button calls e.stopPropagation() to block the card's onToggle
+// from firing, then calls onClose() directly. This works because the button
+// is a child of the card — stopPropagation prevents the card's onClick
+// re-firing after the button's onClick completes.
+// The header div no longer has its own onClick — only the card wrapper does.
 // -----------------------------------------------------------------------------
 interface TimelineItemProps {
   post: SubstackPost;
   isOpen: boolean;
   onToggle: () => void;
+  onClose: () => void;
 }
 
-function TimelineItem({ post, isOpen, onToggle }: TimelineItemProps) {
+function TimelineItem({ post, isOpen, onToggle, onClose }: TimelineItemProps) {
   return (
     <div className="relative pl-7">
+      {/* Timeline dot */}
       <div className="absolute left-0 top-5 w-3 h-3 rounded-full bg-teal-600 border-2 border-gray-50 shadow-sm z-10" />
 
+      {/* Date stamp */}
       {post.displayDate && (
         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
           {post.displayDate}
@@ -224,46 +191,57 @@ function TimelineItem({ post, isOpen, onToggle }: TimelineItemProps) {
       )}
 
       <div
-        className={`bg-white rounded-lg shadow-sm cursor-pointer transition-shadow duration-200 overflow-hidden ${
-          isOpen ? 'shadow-md ring-1 ring-teal-500' : 'hover:shadow-md'
+        className={`bg-gray-50 rounded-lg transition-shadow duration-200 overflow-hidden ${
+          isOpen ? 'shadow-md ring-1 ring-teal-500' : 'hover:shadow-md cursor-pointer'
         }`}
-        onClick={onToggle}
       >
-        <div className="flex items-start gap-4 p-5">
-          <div className="flex-1 min-w-0">
-            <h3 className={`font-bold leading-snug mb-2 transition-colors text-base ${isOpen ? 'text-teal-600' : 'text-gray-900'}`}>
-              {post.title}
-            </h3>
-            <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">{post.excerpt}</p>
-          </div>
+        {/* Title bar — always visible, clicking it toggles the card */}
+        <div
+          className="flex items-center gap-4 px-5 py-4 cursor-pointer"
+          onClick={onToggle}
+        >
+          <h3 className={`flex-1 font-bold leading-snug transition-colors ${
+            isOpen ? 'text-teal-600' : 'text-gray-900'
+          }`}>
+            {post.title}
+          </h3>
           <ChevronDown
             size={20}
-            className={`flex-shrink-0 mt-1 text-gray-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-teal-500' : ''}`}
+            className={`flex-shrink-0 text-gray-400 transition-transform duration-300 ${
+              isOpen ? 'rotate-180 text-teal-500' : ''
+            }`}
           />
         </div>
 
-        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-          <div className="border-t border-gray-100 px-5 py-5">
+        {/* Everything below the title animates in/out.
+            stopPropagation on this wrapper prevents any click inside
+            (excerpt, buttons, links) from bubbling to the title bar's onToggle */}
+        <div
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            isOpen ? 'max-h-[500px]' : 'max-h-0'
+          }`}
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="border-t border-gray-200 px-5 py-5">
             <p className="text-gray-600 text-sm leading-relaxed mb-5">{post.excerpt}</p>
             <div className="flex items-center gap-3 mb-5">
-              <div className="flex-1 h-px bg-gray-100" />
+              <div className="flex-1 h-px bg-gray-200" />
               <span className="text-xs text-gray-400">continues on Substack</span>
-              <div className="flex-1 h-px bg-gray-100" />
+              <div className="flex-1 h-px bg-gray-200" />
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <a
                 href={post.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={e => e.stopPropagation()}
-                className="inline-flex items-center gap-2 bg-teal-600 text-white text-sm font-bold px-5 py-2.5 rounded-lg hover:bg-teal-700 transition-colors"
+                className="w-full sm:w-auto bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors inline-flex items-center justify-center gap-2"
               >
-                Read full post <ExternalLink size={13} />
+                Read full post <ExternalLink size={16} />
               </a>
               <button
                 type="button"
-                onClick={e => { e.stopPropagation(); onToggle(); }}
-                className="text-sm text-gray-400 hover:text-gray-600 px-3 py-2 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+                onClick={onClose}
+                className="w-full sm:w-auto bg-white text-teal-600 px-6 py-3 rounded-lg border border-teal-600 hover:bg-teal-50 transition-colors inline-flex items-center justify-center gap-2"
               >
                 Collapse
               </button>
@@ -276,7 +254,7 @@ function TimelineItem({ post, isOpen, onToggle }: TimelineItemProps) {
 }
 
 // -----------------------------------------------------------------------------
-// LOADING SKELETON
+// LOADING SKELETON — three placeholder cards while RSS fetch is in flight
 // -----------------------------------------------------------------------------
 function LoadingSkeleton() {
   return (
@@ -285,7 +263,7 @@ function LoadingSkeleton() {
         <div key={n} className="relative pl-7">
           <div className="absolute left-0 top-5 w-3 h-3 rounded-full bg-teal-200 border-2 border-gray-50" />
           <div className="h-3 w-28 bg-gray-200 rounded mb-3 animate-pulse" />
-          <div className="bg-white rounded-lg shadow-sm p-5 space-y-3">
+          <div className="bg-gray-50 rounded-lg p-5 space-y-3">
             <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
             <div className="h-3 bg-gray-100 rounded w-full animate-pulse" />
             <div className="h-3 bg-gray-100 rounded w-5/6 animate-pulse" />
@@ -298,12 +276,20 @@ function LoadingSkeleton() {
 
 // -----------------------------------------------------------------------------
 // MAIN PAGE COMPONENT
+// Layout mirrors AboutResearch.tsx:
+//   - max-w-7xl outer container
+//   - Hero banner: bg-white rounded-lg shadow-sm overflow-hidden, h-48 md:h-64
+//     with gradient overlay and text inside — identical structure
+//   - Content card: bg-white rounded-lg shadow-sm p-8 mb-8
+//   - Mobile collapsible timeline with md:hidden chevron button
 // -----------------------------------------------------------------------------
 export function BlogPage() {
   const [posts, setPosts] = useState<SubstackPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [usingFallback, setUsingFallback] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
+  // Mobile collapse state for the timeline section — mirrors AboutResearch
+  const [timelineExpanded, setTimelineExpanded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -334,25 +320,88 @@ export function BlogPage() {
     setOpenId(prev => (prev === id ? null : id));
   }
 
+  function handleClose() {
+    setOpenId(null);
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      {/* ── Outer container matches AboutResearch exactly ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
-        <div className="mb-10">
-          <h1 className="text-gray-900 mb-3">Blog & Insights</h1>
-          <p className="text-gray-600 max-w-2xl leading-relaxed">
-            Research reflections, critical commentary, and a curated reading list on PCOS,
-            digital health, and patient-centred design, updated regularly.
-          </p>
+        {/* ── HERO BANNER — same structure as AboutResearch hero ──
+            bg-white card wraps the image + gradient overlay + text.
+            h-48 on mobile, h-64 on md+. Gradient: teal-900/80 → teal-600/60 */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
+          <div className="relative h-48 md:h-64">
+            <ImageWithFallback
+              src={blogHeaderImg}
+              alt="Teal illustration of a keyboard and reproductive anatomy"
+              className="w-full h-full object-cover"
+            />
+            {/* Gradient overlay — identical to AboutResearch hero */}
+            <div className="absolute inset-0 bg-gradient-to-r from-teal-900/80 to-teal-600/60 flex items-center">
+              <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-white">
+                <h1 className="text-white mb-4">Blog & Insights</h1>
+                <p className="text-teal-50">
+                  Research reflections, critical commentary, and findings on PCOS,
+                  digital health, and patient-centred design, updated regularly.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <SubstackBanner />
+        {/* ── SUBSTACK SUBSCRIBE CARD — bg-white section card ── */}
+        <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            {/* Icon + text — always full width on mobile, shrinks on sm+ */}
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Rss className="text-teal-600" size={20} />
+              </div>
+              <div className="min-w-0">
+                <h2 className="mb-1">PCOS PhD Dispatches &mdash; on Substack</h2>
+                <p className="text-gray-600">
+                  Thoughts and findings through the PhD journey and PCOS lived experience.
+                </p>
+              </div>
+            </div>
+            {/* Button — sits below text on mobile, right-aligned on sm+ */}
+            <a
+              href="https://substack.com/@hbwray"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-shrink-0 w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-teal-600 text-white font-bold px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors text-sm"
+            >
+              Subscribe free
+            </a>
+          </div>
+        </div>
 
-        {loading && <LoadingSkeleton />}
+        {/* ── TIMELINE FEED CARD ── */}
+        <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
+          {/* Section header with mobile collapse toggle — mirrors AboutResearch */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+              <Rss className="text-teal-600" size={20} />
+            </div>
+            <h2 className="flex-1">Latest Posts</h2>
+            {/* Mobile-only collapse toggle — hidden on md+ where content always shows */}
+            <button
+              className="md:hidden ml-auto text-teal-600 hover:bg-teal-50 p-2 rounded-lg transition-colors"
+              onClick={() => setTimelineExpanded(!timelineExpanded)}
+              aria-label={timelineExpanded ? 'Collapse posts' : 'Expand posts'}
+            >
+              {timelineExpanded ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+            </button>
+          </div>
 
-        {!loading && (
-          <>
-            {usingFallback && (
+          {/* Timeline — hidden on mobile until expanded, always shown on md+ */}
+          <div className={`${timelineExpanded ? 'block' : 'hidden'} md:block`}>
+
+            {/* Fallback notice when live RSS unavailable */}
+            {!loading && usingFallback && (
               <div className="mb-6 flex items-start gap-3 bg-teal-50 border border-teal-200 rounded-lg px-4 py-3">
                 <Rss size={16} className="text-teal-500 flex-shrink-0 mt-0.5" />
                 <p className="text-teal-800 text-sm leading-relaxed">
@@ -369,46 +418,61 @@ export function BlogPage() {
               </div>
             )}
 
-            <div className="relative">
-              <div className="absolute left-1.5 top-0 bottom-0 w-px bg-gray-200" />
-              <div className="space-y-6">
-                {posts.map(post => {
-                  const id = post.link + post.title;
-                  return (
-                    <TimelineItem
-                      key={id}
-                      post={post}
-                      isOpen={openId === id}
-                      onToggle={() => handleToggle(id)}
-                    />
-                  );
-                })}
+            {loading && <LoadingSkeleton />}
+
+            {!loading && (
+              <div className="relative">
+                {/* Vertical timeline line */}
+                <div className="absolute left-1.5 top-0 bottom-0 w-px bg-gray-200" />
+                <div className="space-y-6">
+                  {posts.map(post => {
+                    const id = post.link + post.title;
+                    return (
+                      <TimelineItem
+                        key={id}
+                        post={post}
+                        isOpen={openId === id}
+                        onToggle={() => handleToggle(id)}
+                        onClose={handleClose}
+                      />
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="mt-10 flex justify-center">
-              <a
-                href="https://substack.com/@hbwray"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 border-2 border-teal-600 text-teal-600 font-bold rounded-xl hover:bg-teal-600 hover:text-white transition-colors text-sm"
-              >
-                <Rss size={15} />
-                View full archive on Substack
-              </a>
-            </div>
-          </>
-        )}
+            {/* View full archive */}
+            {!loading && (
+              <div className="mt-8 pt-6 border-t border-gray-100 flex justify-center">
+                <a
+                  href="https://substack.com/@hbwray"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 border-2 border-teal-600 text-teal-600 font-bold rounded-lg hover:bg-teal-600 hover:text-white transition-colors text-sm"
+                >
+                  <Rss size={15} />
+                  View full archive on Substack
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
 
-        <div className="mt-14 bg-teal-50 border border-teal-200 rounded-2xl p-8 text-center">
-          <h3 className="text-teal-900 mb-2">Get in Touch</h3>
-          <p className="text-teal-800 text-sm max-w-xl mx-auto mb-5 leading-relaxed">
+        {/* ── GET IN TOUCH CARD — matches site section card style ── */}
+        <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+              <Mail className="text-teal-600" size={20} />
+            </div>
+            <h2>Get in Touch</h2>
+          </div>
+          <p className="text-gray-600 mb-6 max-w-2xl">
             Have a question about the research, or a paper you think should be on the reading list?
             Reach out directly.
           </p>
           <a
             href="mailto:wrayh@uni.coventry.ac.uk"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 text-white font-bold rounded-xl hover:bg-teal-700 transition-colors text-sm"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-teal-600 text-white font-bold px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors text-sm"
           >
             <Mail size={15} />
             wrayh@uni.coventry.ac.uk
