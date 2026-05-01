@@ -1,15 +1,18 @@
 // =============================================================================
 // BlogPage.tsx
-// Version: 2.4.8
+// Version: 2.4.9
 // Last updated: 2026-04-29
 //
 // CHANGELOG
+// v2.4.9 (2026-04-29)
+//   - Added thumbnail/colour block to collapsed title bar.
+//     Post image shown if RSS provides one; otherwise a teal colour block
+//     with the post's two-letter initials. Four teal shades cycle across posts.
+//     Block uses w-12 h-12 rounded-lg — matches site icon block pattern
+//     from HomePagen feature cards.
+//
 // v2.4.8 (2026-04-29)
-//   - FIXED: Expand/collapse not working in StackBlitz with fallback data.
-//     Root cause: max-h-[500px] is a Tailwind arbitrary value — not generated
-//     by JIT in StackBlitz with Tailwind v4, so div stayed at max-h-0.
-//     Fix: replaced with inline style={{ maxHeight, overflow, transition }}
-//     which bypasses Tailwind JIT entirely, works in all environments.
+//   - Fixed expand/collapse via inline style replacing max-h-[500px]
 //
 // v2.4.7 (2026-04-29)
 //   - Collapsed card shows title bar only; all content in animated section
@@ -54,12 +57,17 @@ interface SubstackPost {
   excerpt: string;
   displayDate: string;
   link: string;
+  thumbnail: string; // URL from RSS, or empty string — colour block shown as fallback
 }
 
 // -----------------------------------------------------------------------------
 // STATIC FALLBACK POSTS
 // Shown when all RSS fetch attempts fail (strict CSP, offline, etc.)
 // -----------------------------------------------------------------------------
+// Teal colour variants used as colour block backgrounds when no thumbnail.
+// Each maps to a Tailwind bg class so they stay consistent with the site palette.
+const COLOUR_BLOCKS = ['bg-teal-600', 'bg-teal-700', 'bg-teal-500', 'bg-teal-800'];
+
 const FALLBACK_POSTS: SubstackPost[] = [
   {
     title: 'Why PCOS Diagnosis Takes So Long — and What We Can Do About It',
@@ -67,6 +75,7 @@ const FALLBACK_POSTS: SubstackPost[] = [
       'The average time from first symptoms to diagnosis is over two years. I explore the systemic, cultural, and clinical reasons behind this delay and what patient-centred design could offer as part of the solution.',
     displayDate: '28 March 2026',
     link: 'https://substack.com/@hbwray',
+    thumbnail: '',
   },
   {
     title: 'Flo, Clue, and the Period Tracker Problem: What Apps Get Wrong',
@@ -74,6 +83,7 @@ const FALLBACK_POSTS: SubstackPost[] = [
       'Period-tracking apps collect enormous amounts of intimate data, yet most still present PCOS as an afterthought. I look at where UX design is failing women with hormonal conditions.',
     displayDate: '10 March 2026',
     link: 'https://substack.com/@hbwray',
+    thumbnail: '',
   },
   {
     title: 'What Self-Management Actually Means When You Have PCOS',
@@ -81,6 +91,7 @@ const FALLBACK_POSTS: SubstackPost[] = [
       'The phrase "lifestyle management" is used constantly in PCOS care — but what does it mean in practice? Drawing from survey responses, I unpack the emotional labour behind the advice.',
     displayDate: '18 February 2026',
     link: 'https://substack.com/@hbwray',
+    thumbnail: '',
   },
   {
     title: 'Co-Design in Healthcare: Involving Patients in Building Better Tools',
@@ -88,6 +99,7 @@ const FALLBACK_POSTS: SubstackPost[] = [
       'Co-design is more than a buzzword. It is a methodology with real implications for how digital health tools are built and evaluated. Here I outline my approach and early findings.',
     displayDate: '30 January 2026',
     link: 'https://substack.com/@hbwray',
+    thumbnail: '',
   },
 ];
 
@@ -120,12 +132,19 @@ function parseRssXml(xml: string): SubstackPost[] {
   const doc = parser.parseFromString(xml, 'text/xml');
   const items = Array.from(doc.querySelectorAll('item'));
   if (!items.length) throw new Error('no items');
-  return items.map(item => ({
-    title: item.querySelector('title')?.textContent?.trim() || 'Untitled',
-    excerpt: truncate(stripHtml(item.querySelector('description')?.textContent || '')),
-    displayDate: formatDate(item.querySelector('pubDate')?.textContent || ''),
-    link: item.querySelector('link')?.textContent?.trim() || 'https://substack.com/@hbwray',
-  }));
+  return items.map(item => {
+    // Try to find thumbnail from enclosure or media:content
+    const enclosure = item.querySelector('enclosure');
+    const media = item.querySelector('content');
+    const thumbnail = enclosure?.getAttribute('url') || media?.getAttribute('url') || '';
+    return {
+      title: item.querySelector('title')?.textContent?.trim() || 'Untitled',
+      excerpt: truncate(stripHtml(item.querySelector('description')?.textContent || '')),
+      displayDate: formatDate(item.querySelector('pubDate')?.textContent || ''),
+      link: item.querySelector('link')?.textContent?.trim() || 'https://substack.com/@hbwray',
+      thumbnail,
+    };
+  });
 }
 
 async function fetchViaCorsproxy(): Promise<SubstackPost[]> {
@@ -143,6 +162,7 @@ async function fetchViaRss2Json(): Promise<SubstackPost[]> {
     excerpt: truncate(stripHtml(item.description || item.content || '')),
     displayDate: formatDate(item.pubDate),
     link: item.link || 'https://substack.com/@hbwray',
+    thumbnail: item.thumbnail || item.enclosure?.link || '',
   }));
 }
 
@@ -154,25 +174,24 @@ async function fetchViaAllOrigins(): Promise<SubstackPost[]> {
 
 // -----------------------------------------------------------------------------
 // TIMELINE ITEM
-// Single expandable post card. One open at a time, controlled by parent.
-// onToggle — called when clicking the card header (opens or closes)
-// -----------------------------------------------------------------------------
-// TIMELINE ITEM
-// Single card div with onClick={onToggle} on the whole card.
-// Collapse button calls e.stopPropagation() to block the card's onToggle
-// from firing, then calls onClose() directly. This works because the button
-// is a child of the card — stopPropagation prevents the card's onClick
-// re-firing after the button's onClick completes.
-// The header div no longer has its own onClick — only the card wrapper does.
+// Title bar shows a thumbnail (post image) or teal colour block with initials.
+// Matches site's w-12 h-12 rounded-lg icon block pattern from HomePagen.
+// onToggle — called by clicking the title bar (opens or closes)
+// onClose  — called by the Collapse button (always closes)
+// stopPropagation on the expanded wrapper prevents clicks inside from reaching
+// the title bar's onToggle.
 // -----------------------------------------------------------------------------
 interface TimelineItemProps {
   post: SubstackPost;
+  index: number;       // Used to cycle teal colour block variants
   isOpen: boolean;
   onToggle: () => void;
   onClose: () => void;
 }
 
-function TimelineItem({ post, isOpen, onToggle, onClose }: TimelineItemProps) {
+function TimelineItem({ post, index, isOpen, onToggle, onClose }: TimelineItemProps) {
+  const colourBlock = COLOUR_BLOCKS[index % COLOUR_BLOCKS.length];
+
   return (
     <div className="relative pl-7">
       {/* Timeline dot */}
@@ -190,16 +209,35 @@ function TimelineItem({ post, isOpen, onToggle, onClose }: TimelineItemProps) {
           isOpen ? 'shadow-md ring-1 ring-teal-500' : 'hover:shadow-md cursor-pointer'
         }`}
       >
-        {/* Title bar — always visible, clicking it toggles the card */}
+        {/* Title bar — thumbnail/colour block + title + chevron */}
         <div
-          className="flex items-center gap-4 px-5 py-4 cursor-pointer"
+          className="flex items-center gap-3 px-4 py-3 cursor-pointer"
           onClick={onToggle}
         >
-          <h3 className={`flex-1 font-bold leading-snug transition-colors ${
+          {/* Thumbnail or colour block — w-12 h-12 rounded-lg matches site icon style */}
+          <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden">
+            {post.thumbnail ? (
+              <img
+                src={post.thumbnail}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className={`w-full h-full ${colourBlock} flex items-center justify-center`}>
+                <span className="text-white text-sm font-bold select-none">
+                  {post.title.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase()}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Title */}
+          <h3 className={`flex-1 font-bold leading-snug transition-colors text-sm ${
             isOpen ? 'text-teal-600' : 'text-gray-900'
           }`}>
             {post.title}
           </h3>
+
           <ChevronDown
             size={20}
             className={`flex-shrink-0 text-gray-400 transition-transform duration-300 ${
@@ -208,10 +246,7 @@ function TimelineItem({ post, isOpen, onToggle, onClose }: TimelineItemProps) {
           />
         </div>
 
-        {/* Everything below the title animates in/out.
-            Using inline style for max-height instead of Tailwind arbitrary
-            value — avoids JIT compilation issues in StackBlitz with Tailwind v4.
-            stopPropagation prevents clicks inside expanding to bubble to title bar */}
+        {/* Expanded content — inline style avoids Tailwind JIT arbitrary value issues */}
         <div
           style={{ maxHeight: isOpen ? '500px' : '0px', overflow: 'hidden', transition: 'max-height 0.3s ease-in-out' }}
           onClick={e => e.stopPropagation()}
@@ -419,12 +454,13 @@ export function BlogPage() {
                 {/* Vertical timeline line */}
                 <div className="absolute left-1.5 top-0 bottom-0 w-px bg-gray-200" />
                 <div className="space-y-6">
-                  {posts.map(post => {
+                  {posts.map((post, index) => {
                     const id = post.link + post.title;
                     return (
                       <TimelineItem
                         key={id}
                         post={post}
+                        index={index}
                         isOpen={openId === id}
                         onToggle={() => handleToggle(id)}
                         onClose={handleClose}
