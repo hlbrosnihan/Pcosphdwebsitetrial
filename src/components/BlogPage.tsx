@@ -1,6 +1,19 @@
 // =============================================================================
 // BlogPage.tsx
-// Version: 2.4.9
+// Version: 2.5.0
+// Last updated: 2026-05-01
+//
+// CHANGELOG
+// v2.5.0 (2026-05-01)
+//   - FIXED: RSS feed not loading on live site (coventry.domains).
+//     Root cause: wrong Substack URL format. substack.com/@hbwray/feed is a
+//     profile URL — it does not serve an RSS feed. The correct format is
+//     https://[publication].substack.com/feed using the publication subdomain.
+//     Updated to hbwray.substack.com/feed — replace with your exact publication
+//     name if this differs from your handle.
+//
+// v2.4.9 (2026-04-29)
+//   - Added thumbnail/colour block to collapsed title bar
 // Last updated: 2026-04-29
 //
 // CHANGELOG
@@ -110,7 +123,11 @@ const FALLBACK_POSTS: SubstackPost[] = [
 // Tier 3: allorigins.win — additional fallback proxy
 // Tier 4: FALLBACK_POSTS — always works, no network needed
 // -----------------------------------------------------------------------------
-const SUBSTACK_RSS = 'https://substack.com/@hbwray/feed';
+// IMPORTANT: Substack RSS feeds use the publication subdomain, not the profile URL.
+// Format: https://[publicationname].substack.com/feed
+// Check your Substack dashboard for your publication's subdomain.
+// Current value is a placeholder — replace with your real publication URL.
+const SUBSTACK_RSS = 'https://hbwray.substack.com/feed';
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
